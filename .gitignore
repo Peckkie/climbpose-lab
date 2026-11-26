@@ -5,7 +5,7 @@
 *.mp4
 *.webm
 *.m4v
-results/
+/results/
 
 # Build / deps (from Phase 1)
 node_modules/
