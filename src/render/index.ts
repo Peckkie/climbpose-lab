@@ -6,15 +6,23 @@ import { drawSkeleton } from './skeleton';
 import { STYLES } from './style';
 import { LAYERS } from './layers';
 import { drawRoute, drawSummary, endPhase, routeAttempt } from './endcards';
+import { drawLabelStrip } from './labels';
 import type { FrameCtx, Renderer, TFn, PFn } from './types';
 
 export * from './types';
 export { STYLES, type StyleName } from './style';
 export { layoutCanvas, viewAt } from './draw';
 export { ROUTE_SEC, ROUTE_BUILD, routeAttempt } from './endcards';
+export type { LabelMarks } from './labels';
 
-/** Draw at video time t (default: the video's current time). t = -1: live preview during analysis. */
+/** Draw at video time t (default: the video's current time). t = -1: live preview during analysis.
+ *  The label strip is drawn on top while labelling, but never while busy (analysis / export). */
 export function drawFrame(r: Renderer, tOverride?: number): void {
+  drawScene(r, tOverride);
+  if (r.s.labelMarks && !r.s.busy && tOverride !== -1) drawLabelStrip(r, r.s.labelMarks);
+}
+
+function drawScene(r: Renderer, tOverride?: number): void {
   const { cv, ctx, video, s } = r;
   const W = cv.width, H = cv.height, u = Math.min(W, H) / 1080, st = STYLES[s.style], D = s.D;
   if (!video.videoWidth) { ctx.fillStyle = '#050506'; ctx.fillRect(0, 0, W, H); return; }

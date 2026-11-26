@@ -2,6 +2,7 @@
 import type { Analysis, Crux, Send } from '../types';
 import type { EnvText } from '../environment';
 import type { Style, StyleName } from './style';
+import type { LabelMarks } from './labels';
 
 export type ShowKey = 'skel' | 'com' | 'limbs' | 'holds' | 'angles' | 'hud' | 'crux' | 'load';
 export type FrameMode = 'orig' | 'reel';
@@ -21,6 +22,7 @@ export interface ViewState {
   cruxFreeze: Crux | null; sendFreeze: Send | null;
   routeBg: number | null;          // frame index used as route-map background
   routePhoto: RoutePhoto | null;
+  labelMarks: LabelMarks | null;   // ground-truth strip while labelling
 }
 
 export interface Renderer {

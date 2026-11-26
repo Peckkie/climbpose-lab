@@ -188,6 +188,27 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
         <p>All values are estimates from single-camera 2D video. They work best for comparing the same climber on the same problem over time. The Flow score is this app's own formula and has not been validated against research data.</p>
       </details>
     </section>
+    <section>
+      <h3><span>06</span> LABEL · GROUND TRUTH</h3>
+      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="lblMode"> Labelling mode — mark what really happened, to measure the app's accuracy</label></div>
+      <div id="lblBody" style="display:none">
+        <div class="note">Play or step to the moment, then press the key. Keys: <b>S</b> start · <b>E</b> end · <b>X</b> sent / not · <b>C</b> crux (frame they came off) · <b>H</b> last hold grabbed · <b>L</b> left/right wrong from / to. Saved in this browser as you go.</div>
+        <div class="row"><input id="lblBy" type="text" placeholder="Labelled by (your name)"><select id="lblStatus"><option value="draft">Draft</option><option value="confirmed">Confirmed</option></select></div>
+        <div class="grid2">
+          <button class="btn small" data-lbl="start">S · Start attempt</button>
+          <button class="btn small" data-lbl="end">E · End attempt</button>
+          <button class="btn small" data-lbl="sent">X · Sent / not sent</button>
+          <button class="btn small" data-lbl="crux">C · Crux here</button>
+          <button class="btn small" data-lbl="hold">H · Last hold here</button>
+          <button class="btn small" data-lbl="lr">L · L/R wrong from/to</button>
+        </div>
+        <div id="lblList"></div>
+        <div id="lblCompare"></div>
+        <div class="grid2"><button class="btn small" id="lblSave">Download labels.json</button><button class="btn small" id="lblLoad">Load labels.json</button></div>
+        <input id="lblFile" type="file" accept=".json,application/json" hidden>
+        <button class="btn small" id="lblClear" style="margin-top:8px;width:100%">Clear labels for this clip</button>
+      </div>
+    </section>
   </aside>
 </main>
 <video id="vid" playsinline muted preload="auto" style="display:none"></video>

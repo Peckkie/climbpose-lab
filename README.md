@@ -71,6 +71,12 @@ New test clip: analyze it in the app, press **Pose fixture (dev)**, put the `.po
 optional) in `tests/fixtures/` (or `tests/fixtures/local/` if it can't be shared), then run
 `npm run golden:update` to record its expected results.
 
+Ground truth for a clip: open card **06 LABEL**, tick *Labelling mode*, step through the video and
+press **S** (attempt start), **E** (end), **X** (sent / not), **C** (crux — the frame they came off),
+**H** (last hold grabbed), **L** (left/right wrong from / to). Labels autosave in the browser and are
+compared live with the app's result; *Download labels.json* and put it next to the clip's pose
+fixture in `tests/fixtures/` so `npm run eval` measures it.
+
 When you change analysis behaviour on purpose: `npm run golden:update`, review the diff of the
 `*.golden.json` files and the `npm run eval` report, and commit them with the code change.
 

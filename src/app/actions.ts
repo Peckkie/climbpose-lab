@@ -9,6 +9,7 @@ import { $, checked, num, setStatus, video, cv } from '../ui/dom';
 import { renderStats } from '../ui/stats';
 import { updatePhotoInfo } from '../ui/route-panel';
 import { applyEnv, envMode, runEnvDetection } from '../ui/environment-panel';
+import { onClipLoaded, refreshLabels } from '../ui/label-panel';
 import { S, R } from './store';
 
 const RESULT_BUTTONS = ['#rec', '#csv', '#json', '#fixture'];
@@ -23,7 +24,7 @@ export function process(): void {
   if (!S.raw) return;
   S.D = runPipeline({ raw: S.raw, settings: settings(), env: envMode(), cache: S.cache,
     edits: { add: S.holdEdits.add, remove: S.holdEdits.remove, attemptResult: S.attemptResult } });
-  renderStats();
+  renderStats(); refreshLabels();
   for (const id of RESULT_BUTTONS) $(id).disabled = false;
 }
 
@@ -40,6 +41,7 @@ export function loadSrc(src: string, name: string, cors: boolean): void {
   video.src = src;
   S.srcFile = (name || 'clip').split(/[\\/]/).pop()!.slice(0, 60);
   S.srcName = (name || 'clip').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_').slice(0, 40);
+  onClipLoaded();
   setStatus('Loading video…', 'busy');
   video.onloadedmetadata = () => {
     $<HTMLElement>('#empty').style.display = 'none';

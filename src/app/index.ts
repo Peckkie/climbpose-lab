@@ -6,6 +6,7 @@ import { initEnvironmentPanel } from '../ui/environment-panel';
 import { initHistoryPanel } from '../ui/history-panel';
 import { initTagging } from '../ui/tagging';
 import { initExportPanel } from '../ui/export-panel';
+import { initLabelPanel } from '../ui/label-panel';
 import { S } from './store';
 import { analyze, loadSrc, process } from './actions';
 
@@ -31,6 +32,7 @@ export function start(): void {
   initSource();
   initTagging();
   initExportPanel();
+  initLabelPanel();
   initPlayer();
   document.fonts?.load('700 20px "Space Grotesk"');
   // debugging handle
