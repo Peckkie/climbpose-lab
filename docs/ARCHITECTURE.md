@@ -104,6 +104,7 @@ climbpose-lab/
 │  ├─ environment/            # M14
 │  ├─ route/                  # M15
 │  ├─ history/                # M16
+│  ├─ labeling/               # ป้ายจริง (*.labels.json) + เทียบกับผล (ใช้ทั้งแอปและ eval)
 │  ├─ ui/                     # M17 *-panel.ts, stats, player, tagging, dom
 │  ├─ util/                   # fmt, lerp (ชั้น 0, ไม่มี DOM)
 │  ├─ config.ts               # เกณฑ์ตัวเลขทั้งหมด

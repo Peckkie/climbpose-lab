@@ -11,7 +11,7 @@ const LAYER = [
   [/^core\/(cleanup|kinematics)\//, 1],
   [/^core\/(segmentation|load|metrics)\//, 2],
   [/^core\/(results|crux)\/|^core\/pipeline\.ts$/, 3],
-  [/^(media|pose|camera|environment|route|history)\//, 4],
+  [/^(media|pose|camera|environment|route|history|labeling)\//, 4],
   [/^(render|export)\//, 5],
   [/^(ui|app)\/|^main\.ts$/, 6],
 ];
