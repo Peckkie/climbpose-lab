@@ -29,6 +29,7 @@ export const CONFIG = {
   holds: {
     handStillMs: 0.16, footStillMs: 0.13, minVis: 0.35, cleanRunS: 0.1, minDurS: 0.4,
     footMinAboveFloorM: 0.1, mergeDistM: 0.1, mergeGapS: 0.6, editMatchM: 0.07,
+    groupDistM: 0.12,         // placements within this of a hold's centre are the same physical hold (re-grips, matches)
   },
   send: { topLevelM: 0.2, handsApartM: 0.35, matchS: 1.0, topHoldSearchM: 0.4, lastHoldLeadS: 0.5 },
   crux: {

@@ -75,22 +75,22 @@ export function drawRoute(r: Renderer, p: number, u: number, st: Style): void {
     ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 4 * u; ctx.beginPath(); ctx.arc(lx, ly, 30 * u, 0, 7); ctx.stroke(); ctx.font = `700 ${17 * u}px "JetBrains Mono"`; const tw = ctx.measureText(txt).width + 16 * u;
     ctx.fillStyle = 'rgba(0,0,0,.8)'; ctx.beginPath(); ctx.roundRect(lx - tw / 2, ly - 70 * u, tw, 28 * u, 8 * u); ctx.fill(); ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(txt, lx, ly - 55 * u); ctx.restore();
   }
-  // placements in order, joined per limb kind; re-grips of one hold drawn once
+  // placements in order, joined per limb kind; one numbered marker per physical hold
   for (const kind of ['foot', 'hand'] as const) {
     const list = hs.filter((h) => h.kind === kind), col = kind === 'hand' ? st.hand : st.foot;
     ctx.strokeStyle = col; ctx.globalAlpha = 0.55; ctx.lineWidth = 2 * u; ctx.setLineDash([8 * u, 7 * u]); ctx.beginPath();
     list.forEach((h, j) => { const [x, y] = T(h.x, h.y); if (j) ctx.lineTo(x, y); else ctx.moveTo(x, y); }); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-    const drawn: typeof list = [];
-    list.forEach((h, j) => {
-      if (drawn.some((q) => Math.hypot(q.x - h.x, q.y - h.y) * D.mpp < 0.08)) return;
-      drawn.push(h);
+    const drawn = new Set<number | undefined>();
+    for (const h of list) {
+      if (drawn.has(h.n)) continue; // re-grip / match on a hold already drawn
+      drawn.add(h.n);
       const [x, y] = T(h.x, h.y), age = (iCut - h.i0) / D.fps, pop = 1 + 0.7 * Math.exp(-age * 6);
       ctx.strokeStyle = col; ctx.lineWidth = 3 * u; if (st.glow) { ctx.shadowBlur = st.glow * u; ctx.shadowColor = col; }
       if (kind === 'hand') {
         const rr = 17 * u * pop; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.arc(x, y, rr, 0, 7); ctx.fill(); ctx.stroke();
-        ctx.shadowBlur = 0; ctx.fillStyle = col; ctx.font = `700 ${15 * u}px "JetBrains Mono"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(j + 1), x, y + 1 * u);
+        ctx.shadowBlur = 0; ctx.fillStyle = col; ctx.font = `700 ${15 * u}px "JetBrains Mono"`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(h.n), x, y + 1 * u);
       } else { const rr = 11 * u * pop; ctx.beginPath(); ctx.moveTo(x, y - rr); ctx.lineTo(x + rr, y); ctx.lineTo(x, y + rr); ctx.lineTo(x - rr, y); ctx.closePath(); ctx.stroke(); ctx.shadowBlur = 0; }
-    });
+    }
   }
   // title
   const pad = 36 * u; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
@@ -98,9 +98,9 @@ export function drawRoute(r: Renderer, p: number, u: number, st: Style): void {
   ctx.fillStyle = st.text; ctx.font = `700 ${44 * u}px "Space Grotesk"`; const MT = E.map; ctx.fillText(MT[0], pad, pad + 44 * u);
   const rw = ctx.measureText(MT[0] + ' ').width; ctx.fillStyle = st.accent; ctx.fillText(MT[1], pad + rw, pad + 44 * u);
   if (RL.label) { ctx.textAlign = 'right'; ctx.font = `700 ${24 * u}px "Space Grotesk"`; ctx.fillStyle = RL.tagHex || st.accent; ctx.fillText(RL.label, W - pad, pad + 40 * u); ctx.textAlign = 'left'; }
-  const nh = hs.filter((h) => h.kind === 'hand').length, nf = hs.length - nh;
+  const nh = new Set(hs.filter((h) => h.kind === 'hand').map((h) => h.n)).size, nf = new Set(hs.filter((h) => h.kind === 'foot').map((h) => h.n)).size;
   ctx.fillStyle = st.mute; ctx.font = `500 ${17 * u}px "JetBrains Mono"`;
-  ctx.fillText(`✋ ${nh} hand  ·  🦶 ${nf} foot placements  ·  ${fmt((i1 - i0) / D.fps)}${at.highFootM ? `  ·  top ${at.highFootM.toFixed(1)} m` : ''}`, pad, pad + 80 * u);
+  ctx.fillText(`✋ ${nh} hand holds  ·  🦶 ${nf} footholds  ·  ${fmt((i1 - i0) / D.fps)}${at.highFootM ? `  ·  top ${at.highFootM.toFixed(1)} m` : ''}`, pad, pad + 80 * u);
   ctx.restore();
 }
 
@@ -134,7 +134,7 @@ export function drawSummary(r: Renderer, alpha: number, u: number, st: Style): v
   // bars
   const items: [string, number, string][] = [
     ['FLUENCY', D.sc.fluency, isFinite(M.ldlj) ? 'LDLJ ' + M.ldlj.toFixed(1) : ''], ['PATH', D.sc.path, isFinite(M.gie) ? 'GIE ' + M.gie.toFixed(2) : ''],
-    ['STRAIGHT ARMS', D.sc.arms, isFinite(M.straightArm) ? Math.round(M.straightArm * 100) + '% of rest' : ''], ['FOOTWORK', D.sc.feet, `${M.footHolds} feet : ${M.handHolds} hands`],
+    ['STRAIGHT ARMS', D.sc.arms, isFinite(M.straightArm) ? Math.round(M.straightArm * 100) + '% of rest' : ''], ['FOOTWORK', D.sc.feet, `${M.footMoves} foot : ${M.handMoves} hand moves`],
   ];
   let y = py + pad + 300 * u; const bw = pw - 2 * pad;
   for (const [k, v, sub] of items) {

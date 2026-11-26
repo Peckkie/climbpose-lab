@@ -4,7 +4,8 @@ import { describe, it, expect } from 'vitest';
 import { fillGaps, gsmooth, deriv, pct, hull, angleAt, cleanRuns, runs, clamp01 } from '../../src/core/signal';
 import { solveStatics } from '../../src/core/load';
 import { rejectOutliers, fixLeftRight } from '../../src/core/cleanup';
-import type { RawTrack } from '../../src/types';
+import { groupHolds, holdCounts } from '../../src/core/segmentation';
+import type { Hold, RawTrack } from '../../src/types';
 
 describe('M05 signal', () => {
   it('fillGaps interpolates short interior gaps only', () => {
@@ -83,5 +84,20 @@ describe('M04 cleanup', () => {
     const out = fixLeftRight(R);
     expect(out.swaps.arms).toBe(5);
     for (let i = 20; i < 25; i++) expect(out.X[15 * N + i]).toBeCloseTo(orig[15 * N + i]);
+  });
+});
+
+describe('M07 hold grouping', () => {
+  const H = (limb: string, kind: 'hand' | 'foot', x: number, y: number, i0: number): Hold => ({ limb, kind, x, y, i0, i1: i0 + 10 });
+  it('re-grips and matches on one hold share its number; holds further apart do not', () => {
+    // mpp = 0.01 m/px → 12 cm = 12 px
+    const hs = [H('LH', 'hand', 100, 100, 0), H('RH', 'hand', 108, 102, 5), H('LH', 'hand', 100, 60, 20), H('LH', 'hand', 104, 98, 40), H('LF', 'foot', 100, 100, 3)];
+    groupHolds(hs, 0.01, 0.12);
+    expect(hs.map((h) => h.n)).toEqual([1, 1, 2, 1, 1]);
+  });
+  it('counts distinct holds and moves (a limb back on the hold it last held is not a move)', () => {
+    const hs = [H('LH', 'hand', 0, 0, 0), H('LH', 'hand', 2, 0, 20), H('RH', 'hand', 1, 0, 25), H('LH', 'hand', 0, -50, 40), H('LF', 'foot', 0, 90, 5), H('tag', 'hand', 0, -50, 60)];
+    groupHolds(hs.sort((a, b) => a.i0 - b.i0), 0.01, 0.12);
+    expect(holdCounts(hs)).toEqual({ handHolds: 2, footHolds: 1, handMoves: 4, footMoves: 1 });
   });
 });

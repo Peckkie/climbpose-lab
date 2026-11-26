@@ -7,7 +7,7 @@ import type { Analysis, Edits, Env, Metrics, RawTrack, Settings } from '../types
 import { fillAll, gsmooth, pct } from './signal';
 import { rejectOutliers, fixLeftRight, type Cleaned, type LRResult } from './cleanup';
 import { buildKinematics } from './kinematics';
-import { estimateFloor, detectAttempts, detectHolds } from './segmentation';
+import { estimateFloor, detectAttempts, detectHolds, holdCounts } from './segmentation';
 import { computeMotionMetrics, flowScore } from './metrics';
 import { resolveResults } from './results';
 import { findCruxes, addLoadCues } from './crux';
@@ -45,8 +45,8 @@ export function runPipeline({ raw, settings, env, edits = NO_EDITS, cache = {} }
   const M = mm.M as Metrics;
   // M07 holds + support masks
   const { holds, supp, endPos } = detectHolds(k, fl.floorY, fps, edits);
-  const hn = holds.filter((h) => h.kind === 'hand').length, fn = holds.length - hn;
-  M.handHolds = hn; M.footHolds = fn; M.footHand = hn ? fn / hn : NaN;
+  const hc = holdCounts(holds);
+  Object.assign(M, hc); M.footHand = hc.handMoves ? hc.footMoves / hc.handMoves : NaN;
   // M08 results
   const sends = resolveResults(attempts, holds, endPos, fl.floorY, k.mpp, N, fps, env, edits);
   M.sends = sends.length;

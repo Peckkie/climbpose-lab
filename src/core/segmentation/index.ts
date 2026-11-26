@@ -111,8 +111,9 @@ export interface HoldsOut {
 
 /**
  * Holds = hand/foot end effector still for >= minDurS (hand on hip = chalking, foot on the floor
- * excluded; re-grips nearby merged). Also builds the looser support masks used by the load model.
- * Manual edits (hold tagging) are applied before numbering.
+ * excluded; a quick re-grip by the same limb is merged). Each placement is numbered by physical
+ * hold (groupHolds), so re-grips and matches share a number. Also builds the looser support masks
+ * used by the load model. Manual edits (hold tagging) are applied before numbering.
  */
 export function detectHolds(k: Kinematics, floorY: number, fps: number, edits: Edits, suppSpeedMs: number = CONFIG.load.supportSpeedMs, cfg = CONFIG.holds): HoldsOut {
   const { XSW, YSW, V, mpp } = k, N = V[0].length;
@@ -146,12 +147,43 @@ export function detectHolds(k: Kinematics, floorY: number, fps: number, edits: E
       holds.push(prev);
     }
   }
-  if (edits.add.length || edits.remove.length) {
-    for (const r of edits.remove) { const j = holds.findIndex((h) => h.kind === r.kind && Math.hypot(h.x - r.x, h.y - r.y) * mpp < cfg.editMatchM); if (j >= 0) holds.splice(j, 1); }
-    for (const a of edits.add) holds.push({ ...a });
-  }
   holds.sort((p, q) => p.i0 - q.i0);
-  let hn = 0, fn = 0;
-  for (const h of holds) h.n = h.kind === 'hand' ? ++hn : ++fn;
+  groupHolds(holds, mpp, cfg.groupDistM);
+  if (edits.add.length || edits.remove.length) {
+    // removing a hold removes every placement on it (all its re-grips)
+    for (const r of edits.remove) {
+      let best: Hold | null = null, bd = Infinity;
+      for (const h of holds) { if (h.kind !== r.kind) continue; const d = Math.hypot(h.x - r.x, h.y - r.y) * mpp; if (d < bd) { bd = d; best = h; } }
+      if (best && bd < cfg.editMatchM) { const g = best.n; for (let j = holds.length - 1; j >= 0; j--) if (holds[j].kind === r.kind && holds[j].n === g) holds.splice(j, 1); }
+    }
+    for (const a of edits.add) holds.push({ ...a });
+    holds.sort((p, q) => p.i0 - q.i0);
+    groupHolds(holds, mpp, cfg.groupDistM);
+  }
   return { holds, supp, endPos };
+}
+
+/** Number placements by physical hold (in first-touch order, per kind): a placement within
+ *  `distM` of an existing hold's centre is the same hold. Placements must be sorted by time. */
+export function groupHolds(holds: Hold[], mpp: number, distM: number): void {
+  const groups: Record<'hand' | 'foot', { x: number; y: number; c: number }[]> = { hand: [], foot: [] };
+  for (const h of holds) {
+    const gs = groups[h.kind];
+    let best = -1, bd = Infinity;
+    gs.forEach((g, k) => { const d = Math.hypot(g.x - h.x, g.y - h.y) * mpp; if (d < bd) { bd = d; best = k; } });
+    if (best >= 0 && bd < distM) { const g = gs[best]; g.x = (g.x * g.c + h.x) / (g.c + 1); g.y = (g.y * g.c + h.y) / (g.c + 1); g.c++; h.n = best + 1; }
+    else { gs.push({ x: h.x, y: h.y, c: 1 }); h.n = gs.length; }
+  }
+}
+
+/** Distinct holds and moves per kind. A move is a placement, except a limb going back onto the
+ *  hold it last held (re-grip, shake-out). Holds must be numbered by groupHolds. */
+export function holdCounts(holds: Hold[]): { handHolds: number; footHolds: number; handMoves: number; footMoves: number } {
+  const seen = { hand: new Set<number>(), foot: new Set<number>() }, moves = { hand: 0, foot: 0 }, last: Record<string, number> = {};
+  for (const h of holds) {
+    seen[h.kind].add(h.n!);
+    if (h.limb === 'tag' || last[h.limb] !== h.n) moves[h.kind]++;
+    if (h.limb !== 'tag') last[h.limb] = h.n!;
+  }
+  return { handHolds: seen.hand.size, footHolds: seen.foot.size, handMoves: moves.hand, footMoves: moves.foot };
 }

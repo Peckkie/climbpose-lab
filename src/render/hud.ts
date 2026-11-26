@@ -25,7 +25,8 @@ export function drawHUD({ r, ctx, D, st, u, W, H, t, i }: FrameCtx): void {
   const att = D.attempts.find((a) => i >= a.i0 && i < a.i1), done = D.attempts.filter((a) => a.i0 <= i).length;
   ctx.textBaseline = 'alphabetic';
   // route chip
-  const nhR = D.holds.filter((h) => h.kind === 'hand' && h.i0 <= i).length;
+  const touched = (kind: 'hand' | 'foot') => new Set(D.holds.filter((h) => h.kind === kind && h.i0 <= i).map((h) => h.n)).size;
+  const nhR = touched('hand');
   const place = /^any (gym|crag)|^example/i.test(RL.gym) ? '' : RL.gym;
   const rl = [RL.label || 'Route: grade not set', place, `${nhR} hand holds`].filter(Boolean).join(' · ');
   {
@@ -47,7 +48,7 @@ export function drawHUD({ r, ctx, D, st, u, W, H, t, i }: FrameCtx): void {
   ctx.font = `500 ${13 * u}px "JetBrains Mono"`; ctx.fillStyle = st.mute; ctx.fillText(E.floor, W - pad, pad + 12 * u);
   ctx.font = `700 ${44 * u}px "Space Grotesk"`; ctx.fillStyle = st.text; ctx.fillText(isFinite(gy) ? Math.max(0, gy).toFixed(1) + ' m' : '–', W - pad, pad + 56 * u);
   ctx.font = `500 ${13 * u}px "JetBrains Mono"`; ctx.fillStyle = st.mute;
-  const nh = D.holds.filter((h) => h.i0 <= i); ctx.fillText(`HOLDS ✋${nh.filter((h) => h.kind === 'hand').length}  🦶${nh.filter((h) => h.kind === 'foot').length}`, W - pad, pad + 80 * u);
+  ctx.fillText(`HOLDS ✋${nhR}  🦶${touched('foot')}`, W - pad, pad + 80 * u);
   if (s.show.load && D.M.bodyKg) { ctx.fillStyle = D.M.bodyKgAssumed ? '#FFB020' : st.mute; ctx.fillText(D.M.bodyKgAssumed ? `LOAD @ ${D.M.bodyKg} kg (ASSUMED)` : `LOAD @ ${D.M.bodyKg} kg`, W - pad, pad + 102 * u); }
   // source file name, small, above the timeline
   if (s.srcFile) {
