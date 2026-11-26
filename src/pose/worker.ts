@@ -27,7 +27,7 @@ export type ToWorker =
 export type FromWorker =
   | { type: 'ready'; delegate: 'GPU' | 'CPU' }
   | { type: 'error'; message: string }
-  | { type: 'result'; i: number; lm: Float32Array | null; cam: [number, number, number, number] | null };
+  | { type: 'result'; i: number; lm: Float64Array | null; cam: [number, number, number, number] | null };  // lm: x,y,vis ×33
 
 function gray(d: Uint8ClampedArray, n: number): Float32Array {
   const g = new Float32Array(n);
@@ -69,8 +69,8 @@ self.onmessage = async (e: MessageEvent<ToWorker>) => {
         c = [s.a, s.b, s.tx, s.ty];
       }
       m.bitmap.close();
-      let out: Float32Array | null = null;
-      if (lm) { out = new Float32Array(99); lm.forEach((p, k) => { out![3 * k] = p.x; out![3 * k + 1] = p.y; out![3 * k + 2] = p.visibility ?? 1; }); }
+      let out: Float64Array | null = null;
+      if (lm) { out = new Float64Array(99); lm.forEach((p, k) => { out![3 * k] = p.x; out![3 * k + 1] = p.y; out![3 * k + 2] = p.visibility ?? 1; }); }
       self.postMessage({ type: 'result', i: m.i, lm: out, cam: c } satisfies FromWorker, out ? [out.buffer] : []);
     } else if (m.type === 'close') {
       if (lmk) { try { lmk.close(); } catch { /* closed */ } lmk = null; }
