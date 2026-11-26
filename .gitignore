@@ -1,0 +1,15 @@
+# Videos never go in the repo (large files, real people on camera)
+*.MOV
+*.mov
+*.MP4
+*.mp4
+*.webm
+*.m4v
+results/
+
+# Build / deps (from Phase 1)
+node_modules/
+dist/
+
+# OS
+.DS_Store
