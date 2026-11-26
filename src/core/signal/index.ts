@@ -125,3 +125,14 @@ export function runs(mask: ArrayLike<number>): [number, number][] {
   }
   return out;
 }
+
+/** Running median over ±r samples (NaN ignored); keeps steps, removes isolated spikes. */
+export function medianFilter(a: F32, r: number): F32 {
+  const n = a.length, o = new Float32Array(n), w: number[] = [];
+  for (let i = 0; i < n; i++) {
+    w.length = 0;
+    for (let j = Math.max(0, i - r); j <= Math.min(n - 1, i + r); j++) if (isFinite(a[j])) w.push(a[j]);
+    o[i] = w.length ? w.sort((p, q) => p - q)[w.length >> 1] : NaN;
+  }
+  return o;
+}

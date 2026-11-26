@@ -2,6 +2,7 @@
 // building up, then the report card.
 import type { Analysis, Attempt } from '../types';
 import { clamp01, fmt } from '../util';
+import { camAt, wallToImage } from '../core/signal/similarity';
 import { drawBackground, line } from './draw';
 import { BONES_C, BONES_L, BONES_R, trailColor, type Style } from './style';
 import type { Renderer, ViewState } from './types';
@@ -37,8 +38,7 @@ export function drawRoute(r: Renderer, p: number, u: number, st: Style): void {
   const ib = s.routeBg != null ? s.routeBg : Math.min(D.N - 1, Math.max(0, Math.round((video.currentTime - D.t0) * D.fps)));
   const ph = s.routePhoto; let srcEl: CanvasImageSource = video, sw = vw, sh = vh, M: (x: number, y: number) => [number, number];
   if (ph && ph.kind === 'upload') { srcEl = ph.el; sw = ph.w; sh = ph.h; const k = sw / vw; M = (x, y) => [x * k, (y - vh / 2) * k + sh / 2]; } // same camera position
-  else if (ph && ph.kind === 'frame') { srcEl = ph.el; const cxk = D.oX[ph.k ?? 0] || 0, cyk = D.oY[ph.k ?? 0] || 0; M = (x, y) => [x + cxk, y + cyk]; }
-  else { const cx = D.oX[ib] || 0, cy = D.oY[ib] || 0; M = (x, y) => [x + cx, y + cy]; }
+  else { const c = camAt(D, ph && ph.kind === 'frame' ? ph.k ?? 0 : ib); if (!isFinite(c.tx)) c.tx = 0; if (!isFinite(c.ty)) c.ty = 0; if (ph) srcEl = ph.el; M = (x, y) => wallToImage(c, x, y); }
   // frame the route: bounding box of holds + CoM path (in the background image's coords)
   let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
   const ext = (x: number, y: number) => { if (!isFinite(x) || !isFinite(y)) return; [x, y] = M(x, y); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); };

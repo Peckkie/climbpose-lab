@@ -101,3 +101,35 @@ describe('M07 hold grouping', () => {
     expect(holdCounts(hs)).toEqual({ handHolds: 2, footHolds: 1, handMoves: 4, footMoves: 1 });
   });
 });
+
+describe('M03 camera similarity', () => {
+  it('compose / invert / fit round-trip', async () => {
+    const { compose, invert, apply, fitSimilarity, ransacSimilarity } = await import('../../src/core/signal/similarity');
+    const m = { a: 1.1 * Math.cos(0.05), b: 1.1 * Math.sin(0.05), tx: 12, ty: -7 };
+    const id = compose(m, invert(m));
+    expect(id.a).toBeCloseTo(1); expect(id.b).toBeCloseTo(0); expect(id.tx).toBeCloseTo(0); expect(id.ty).toBeCloseTo(0);
+    const P: [number, number][] = [[0, 0], [100, 0], [0, 80], [60, 40], [20, 90]], Q = P.map(([x, y]) => apply(m, x, y));
+    const f = fitSimilarity(P, Q)!; expect(f.a).toBeCloseTo(m.a); expect(f.ty).toBeCloseTo(m.ty);
+    // one gross outlier is ignored by RANSAC
+    const Q2 = Q.slice() as [number, number][]; Q2[2] = [500, 500];
+    const r = ransacSimilarity([...P, [30, 30], [80, 70]], [...Q2, apply(m, 30, 30), apply(m, 80, 70)], 1)!;
+    expect(r.inliers).not.toContain(2); expect(r.m.tx).toBeCloseTo(m.tx, 3);
+  });
+  it('tracker recovers a pan + zoom of a textured wall', async () => {
+    const { SimTracker } = await import('../../src/camera/tracker');
+    const { apply, invert } = await import('../../src/core/signal/similarity');
+    const W = 180, H = 320;
+    // smooth random texture defined in wall coordinates
+    const tex = (x: number, y: number) => 128 + 60 * Math.sin(x * 0.21 + Math.sin(y * 0.07) * 3) * Math.cos(y * 0.17 + Math.cos(x * 0.05) * 2) + 30 * Math.sin((x + y) * 0.09);
+    const frame = (m: { a: number; b: number; tx: number; ty: number }) => {
+      const inv = invert(m), g = new Float32Array(W * H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const [u, v] = apply(inv, x, y); g[y * W + x] = tex(u, v); }
+      return g;
+    };
+    const tr = new SimTracker(W, H);
+    let got = tr.push(frame({ a: 1, b: 0, tx: 0, ty: 0 }), null);
+    for (let k = 1; k <= 30; k++) { const s = 1 + 0.004 * k; got = tr.push(frame({ a: s, b: 0, tx: -1.2 * k, ty: 0.8 * k }), null); }
+    expect(got.a).toBeCloseTo(1.12, 2); expect(got.tx).toBeCloseTo(-36, 0); expect(got.ty).toBeCloseTo(24, 0);
+    expect(tr.lost).toBe(0);
+  });
+});

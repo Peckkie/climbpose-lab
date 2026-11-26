@@ -3,17 +3,17 @@
 
 import { CONFIG } from '../../config';
 import type { F32 } from '../../types';
-import { fillGaps, gsmooth, deriv, pct, angleAt, cleanRuns } from '../signal';
+import { fillGaps, gsmooth, deriv, pct, angleAt, cleanRuns, medianFilter } from '../signal';
 
 /** [a,b,c] landmark triplets: elbow L, elbow R, knee L, knee R. */
 export const ANGLES: [number, number, number][] = [[11, 13, 15], [12, 14, 16], [23, 25, 27], [24, 26, 28]];
 
-export interface KinInput { N: number; fps: number; vh: number; X: F32; Y: F32; V: F32; OX: F32; OY: F32; }
+export interface KinInput { N: number; fps: number; vh: number; X: F32; Y: F32; V: F32; OX: F32; OY: F32; CA?: F32; CB?: F32; }
 
 export interface Kinematics {
   X: F32[]; Y: F32[]; V: F32[]; XS: F32[]; YS: F32[];          // image coords (light / strong smoothing)
   XW: F32[]; YW: F32[]; XSW: F32[]; YSW: F32[];               // wall coords
-  oX: F32; oY: F32;                                          // smoothed camera shift
+  oX: F32; oY: F32; cA?: F32; cB?: F32;                      // smoothed camera (translation; scale·cos, scale·sin)
   torso: F32; torsoPx: number; mpp: number;
   comX: F32; comY: F32; cxs: F32; cys: F32;                  // CoM (wall), light / strong smoothing
   vx: F32; vy: F32; speed: F32; valid: Uint8Array; moving: Uint8Array;
@@ -48,13 +48,31 @@ export function buildKinematics(R: KinInput, heightCm: number, cfg = CONFIG): Ki
     XS[k] = gsmooth(x, fps * cfg.smoothing.metricSigmaS); YS[k] = gsmooth(y, fps * cfg.smoothing.metricSigmaS);
     V[k] = gsmooth(fillGaps(R.V.slice(k * N, (k + 1) * N), gap), fps * cfg.smoothing.visSigmaS);
   }
-  // wall coordinates = image coordinates minus accumulated camera motion (typed-array map keeps float32)
-  const oX = gsmooth(R.OX, fps * cfg.smoothing.drawSigmaS), oY = gsmooth(R.OY, fps * cfg.smoothing.drawSigmaS);
-  const XW = X.map((a) => a.map((v, i) => v - oX[i])), YW = Y.map((a) => a.map((v, i) => v - oY[i]));
-  const XSW = XS.map((a) => a.map((v, i) => v - oX[i])), YSW = YS.map((a) => a.map((v, i) => v - oY[i]));
-  // metric scale from trunk length, ignoring close-ups / far shots
+  // wall coordinates = image coordinates with the camera motion (pan, zoom, roll) undone
+  const sim = !!(R.CA && R.CB);
+  const sm = sim
+    ? (a: F32) => gsmooth(medianFilter(a, Math.round(fps * cfg.camera.trackMedianS)), fps * cfg.camera.trackSigmaS)
+    : (a: F32) => gsmooth(a, fps * cfg.smoothing.drawSigmaS);
+  const oX = sm(R.OX), oY = sm(R.OY), cA = R.CA && sm(R.CA), cB = R.CB && sm(R.CB);
+  let XW: F32[], YW: F32[], XSW: F32[], YSW: F32[];
+  if (!cA || !cB) { // translation only (typed-array map keeps float32)
+    XW = X.map((a) => a.map((v, i) => v - oX[i])); YW = Y.map((a) => a.map((v, i) => v - oY[i]));
+    XSW = XS.map((a) => a.map((v, i) => v - oX[i])); YSW = YS.map((a) => a.map((v, i) => v - oY[i]));
+  } else {
+    const toWall = (A: F32[], B: F32[]): [F32[], F32[]] => {
+      const WX = A.map(() => new Float32Array(N)), WY = A.map(() => new Float32Array(N));
+      for (let i = 0; i < N; i++) {
+        const d = cA[i] * cA[i] + cB[i] * cB[i];
+        for (let k = 0; k < A.length; k++) { const qx = A[k][i] - oX[i], qy = B[k][i] - oY[i]; WX[k][i] = (cA[i] * qx + cB[i] * qy) / d; WY[k][i] = (-cB[i] * qx + cA[i] * qy) / d; }
+      }
+      return [WX, WY];
+    };
+    [XW, YW] = toWall(X, Y); [XSW, YSW] = toWall(XS, YS);
+  }
+  // metric scale from trunk length (in wall coordinates, so zooming doesn't change it), ignoring
+  // close-ups / far shots
   const torso = new Float32Array(N);
-  for (let i = 0; i < N; i++) torso[i] = Math.hypot(mid(XS, 11, 12, i) - mid(XS, 23, 24, i), mid(YS, 11, 12, i) - mid(YS, 23, 24, i));
+  for (let i = 0; i < N; i++) torso[i] = Math.hypot(mid(XSW, 11, 12, i) - mid(XSW, 23, 24, i), mid(YSW, 11, 12, i) - mid(YSW, 23, 24, i));
   const tMed = pct(torso, 0.5);
   const torsoPx = pct(torso.map((v) => v > cfg.scale.trunkBandLo * tMed && v < cfg.scale.trunkBandHi * tMed ? v : NaN), cfg.scale.trunkPercentile) || vh * 0.15;
   const heightM = (heightCm || 170) / 100;
@@ -74,5 +92,5 @@ export function buildKinematics(R: KinInput, heightCm: number, cfg = CONFIG): Ki
   cleanRuns(moving, Math.round(fps * cfg.moving.minRunS));
   for (let i = 0; i < N; i++) if (!valid[i]) moving[i] = 0;
   const ang = ANGLES.map(([a, b, c]) => { const o = new Float32Array(N); for (let i = 0; i < N; i++) o[i] = angleAt(X[a][i], Y[a][i], X[b][i], Y[b][i], X[c][i], Y[c][i]); return o; });
-  return { X, Y, V, XS, YS, XW, YW, XSW, YSW, oX, oY, torso, torsoPx, mpp, comX, comY, cxs, cys, vx, vy, speed, valid, moving, ang };
+  return { X, Y, V, XS, YS, XW, YW, XSW, YSW, oX, oY, cA, cB, torso, torsoPx, mpp, comX, comY, cxs, cys, vx, vy, speed, valid, moving, ang };
 }

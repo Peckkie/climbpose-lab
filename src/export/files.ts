@@ -64,5 +64,6 @@ export function poseFixture(o: FixtureInput): object {
     format: 'climbpose.pose/1', clip: o.clip, createdWith: o.createdWith, settings: o.settings,
     env: o.env, envScores: o.envScores, N: R.N, fps: R.fps, t0: R.t0, t1: R.t1, width: R.vw, height: R.vh, scale: { xy: 10, vis: 1000 },
     x: Array.from(R.X, r1), y: Array.from(R.Y, r1), vis: Array.from(R.V, r3), ox: Array.from(R.OX, r1), oy: Array.from(R.OY, r1),
+    ...(R.CA && R.CB ? { camera: 'similarity/1', ca: Array.from(R.CA, (v) => Math.round(v * 1e5)), cb: Array.from(R.CB, (v) => Math.round(v * 1e5)) } : {}),
   };
 }

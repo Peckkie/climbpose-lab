@@ -10,7 +10,8 @@ export interface RawTrack {
   N: number; fps: number; t0: number; t1: number;
   vw: number; vh: number;          // video size after rotation
   X: F32; Y: F32; V: F32;          // [33*N] image px / visibility
-  OX: F32; OY: F32;                // [N] accumulated camera shift (px)
+  OX: F32; OY: F32;                // [N] camera translation (px): image = [CA −CB; CB CA]·wall + (OX, OY)
+  CA?: F32; CB?: F32;              // [N] camera scale·cos / scale·sin (zoom, roll); absent = translation only
 }
 
 export interface Settings {
@@ -80,7 +81,7 @@ export type TorqueTrack = Record<'shL' | 'shR' | 'elL' | 'elR' | 'hipL' | 'hipR'
 export interface Analysis {
   env: Env;
   N: number; fps: number; vw: number; vh: number; t0: number; t1: number;
-  X: F32[]; Y: F32[]; XW: F32[]; YW: F32[]; V: F32[]; oX: F32; oY: F32;
+  X: F32[]; Y: F32[]; XW: F32[]; YW: F32[]; V: F32[]; oX: F32; oY: F32; cA?: F32; cB?: F32; // camera: see RawTrack
   mpp: number; torsoPx: number;
   comX: F32; comY: F32; cxs: F32; cys: F32; speed: F32; vmax: number;
   moving: Uint8Array; valid: Uint8Array; ang: F32[];
