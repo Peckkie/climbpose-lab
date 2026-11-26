@@ -17,7 +17,11 @@ export const CONFIG = {
     windowS: 0.2, searchS: 0.6, minNeighbours: 5,
     hipJumpTrunks: 1.2, trunkMax: 1.6, trunkMin: 0.7,
   },
-  leftRight: { prior: 0.02, crossPenalty: 0.5 },
+  leftRight: {
+    prior: 0.02, crossPenalty: 0.5,
+    sidePenalty: 0.6,         // legs: left knee/ankle/foot on the body's right side (per trunk of offset)
+    sideAxisFull: 0.3,        // body left→right axis shorter than this (trunks, side-on) counts less
+  },
   moving: { speedMs: 0.08, minRunS: 0.15 },
   floor: { atWallLo: 0.75, atWallHi: 1.33, percentile: 0.95, maxBaseAboveAllM: 0.8, handUpTrunks: 0.5,
     baseHandTrunks: 1.0,       // wall-base floor: only frames with a hand this many trunks above the hips (right at the wall)

@@ -46,6 +46,8 @@ export interface LRResult { X: F32; Y: F32; V: F32; swaps: { shoulders: number; 
 /**
  * Per body group (shoulders, hips, arms, legs) choose "as labelled" or "swapped" per frame with a
  * Viterbi pass minimising frame-to-frame jumps; limbs also pay a penalty when thighs/upper arms cross.
+ * Legs also pay when the left leg sits on the body's right side (relative to the shoulder + hip
+ * axis, which are fixed first): breaks the tie when both legs start together and one lifts.
  */
 export function fixLeftRight(R: { N: number; X: F32; Y: F32; V: F32 }, cfg = CONFIG.leftRight): LRResult {
   const N = R.N, X = R.X.slice(), Y = R.Y.slice(), V = R.V.slice();
@@ -89,6 +91,25 @@ export function fixLeftRight(R: { N: number; X: F32; Y: F32; V: F32 }, cfg = CON
     return cross(Pt(base[0], i), Pt(jl, i), Pt(base[1], i), Pt(jr, i)) ? w : 0;
   };
   out.swaps.arms = viterbi(LR_ARMS, crossCost(LR_ARMS, [11, 12], [13, 14], cfg.crossPenalty));
-  out.swaps.legs = viterbi(LR_LEGS, crossCost(LR_LEGS, [23, 24], [25, 26], cfg.crossPenalty));
+  // body side: lateral direction = perpendicular to the spine, pointing to the body's right (sign
+  // from the already-fixed shoulders + hips). The left leg's knee / ankle / foot should be lateral-left
+  // of the right leg's. Side-on, the shoulder/hip axis is short, so the cue counts less.
+  const sideCost = (i: number, s: number) => {
+    const ax = X[12 * N + i] - X[11 * N + i] + X[24 * N + i] - X[23 * N + i], ay = Y[12 * N + i] - Y[11 * N + i] + Y[24 * N + i] - Y[23 * N + i];
+    const sx = (X[11 * N + i] + X[12 * N + i] - X[23 * N + i] - X[24 * N + i]) / 2, sy = (Y[11 * N + i] + Y[12 * N + i] - Y[23 * N + i] - Y[24 * N + i]) / 2;
+    const sl = Math.hypot(sx, sy); if (!isFinite(sl) || !isFinite(ax) || sl < 1e-6) return 0;
+    let ux = -sy / sl, uy = sx / sl;
+    const along = ax * ux + ay * uy; if (along < 0) { ux = -ux; uy = -uy; }
+    const trust = Math.min(1, Math.abs(along) / 2 / (cfg.sideAxisFull * torso));
+    let off = 0, c = 0;
+    for (const [l, r] of [[25, 26], [27, 28], [31, 32]] as [number, number][]) {
+      const L = map(LR_LEGS, l, s), R2 = map(LR_LEGS, r, s);
+      const d = (X[L * N + i] - X[R2 * N + i]) * ux + (Y[L * N + i] - Y[R2 * N + i]) * uy;
+      if (isFinite(d)) { off += d; c++; }
+    }
+    return c ? cfg.sidePenalty * trust * Math.max(0, off / c / torso) : 0;
+  };
+  const legCross = crossCost(LR_LEGS, [23, 24], [25, 26], cfg.crossPenalty);
+  out.swaps.legs = viterbi(LR_LEGS, (i, s) => legCross(i, s) + sideCost(i, s));
   return out;
 }
