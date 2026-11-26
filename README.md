@@ -7,7 +7,7 @@ Climbing movement lab that runs in the browser (builds to a single HTML file). L
 - runs **MediaPipe Pose Landmarker** (33 keypoints) frame by frame in the browser
 - **drops false detections** (pose jumping to the wall/floor for a few frames) and starts a fresh pose model per analysis, so a new clip never inherits the previous clip's tracking position
 - **fixes left/right label swaps**: a Viterbi pass per body group (shoulders, hips, arms, legs) keeps labels continuous over time and penalises crossed thighs / upper arms, which the model produces when it mislabels a high-stepping leg
-- **compensates for camera pan / handheld shake** by tracking wall texture behind the climber, so paths and holds stay pinned to the wall
+- **compensates for camera pan, zoom and roll** (handheld) by tracking wall texture behind the climber against keyframes, so paths and holds stay pinned to the wall
 - computes **efficiency metrics** and a heuristic **Flow Score**
 - counts **attempts** (both feet off the floor ≥ 1.5 s) and classifies how each ended (down-climb / fall or jump-off / still going)
 - renders a stylized overlay (NEON · CHALK · THERMAL): glowing skeleton, CoM trail coloured by speed, limb trails, auto-detected holds (beta map), joint angles, HUD, a **ROUTE MAP** end card (every hand/foot placement on the rock, numbered in order, with time-coloured ghost skeletons and the CoM path) and a report card
@@ -76,6 +76,9 @@ press **S** (attempt start), **E** (end), **X** (sent / not), **C** (crux — th
 **H** (last hold grabbed), **L** (left/right wrong from / to). Labels autosave in the browser and are
 compared live with the app's result; *Download labels.json* and put it next to the clip's pose
 fixture in `tests/fixtures/` so `npm run eval` measures it.
+
+Camera tracking changed? Re-run it for a fixture from the video without the pose model:
+`npx vite-node tools/retrack-camera.ts <video> tests/fixtures/<clip>.pose.json.gz --write`.
 
 When you change analysis behaviour on purpose: `npm run golden:update`, review the diff of the
 `*.golden.json` files and the `npm run eval` report, and commit them with the code change.

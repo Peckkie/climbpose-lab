@@ -5,6 +5,7 @@
 import { CONFIG } from '../config';
 import type { Analysis, Edits, Env, Metrics, RawTrack, Settings } from '../types';
 import { fillAll, gsmooth, pct } from './signal';
+import { camAt, wallToImage } from './signal/similarity';
 import { rejectOutliers, fixLeftRight, type Cleaned, type LRResult } from './cleanup';
 import { buildKinematics } from './kinematics';
 import { estimateFloor, detectAttempts, detectHolds, holdCounts } from './segmentation';
@@ -61,8 +62,9 @@ export function runPipeline({ raw, settings, env, edits = NO_EDITS, cache = {} }
   const { sc, flow } = flowScore(M);
   M.flow = flow;
   // camera follow path for the renderer
-  const camX = gsmooth(fillAll(k.comX.map((v, i) => v + k.oX[i])), fps * CONFIG.camera.followSigmaS);
-  const camY = gsmooth(fillAll(k.comY.map((v, i) => v + k.oY[i])), fps * CONFIG.camera.followSigmaS);
+  const comImg = (j: 0 | 1) => k.comX.map((v, i) => wallToImage(camAt(k, i), v, k.comY[i])[j]);
+  const camX = gsmooth(fillAll(comImg(0)), fps * CONFIG.camera.followSigmaS);
+  const camY = gsmooth(fillAll(comImg(1)), fps * CONFIG.camera.followSigmaS);
   for (let i = 0; i < N; i++) { if (!isFinite(camX[i])) camX[i] = vw / 2; if (!isFinite(camY[i])) camY[i] = vh / 2; }
   const vmax = Math.max(0.6, pct(k.speed, 0.97) || 1);
   M.lrSwapFrames = cache.lr ? cache.lr.swaps : null;
@@ -71,7 +73,7 @@ export function runPipeline({ raw, settings, env, edits = NO_EDITS, cache = {} }
   M.cameraTravelPx = Math.round(Math.hypot(k.oX[N - 1], k.oY[N - 1]));
   return {
     env, N, fps, vw, vh, t0: raw.t0, t1: raw.t1,
-    X: k.X, Y: k.Y, XW: k.XW, YW: k.YW, V: k.V, oX: k.oX, oY: k.oY,
+    X: k.X, Y: k.Y, XW: k.XW, YW: k.YW, V: k.V, oX: k.oX, oY: k.oY, cA: k.cA, cB: k.cB,
     mpp: k.mpp, torsoPx: k.torsoPx,
     comX: k.comX, comY: k.comY, cxs: k.cxs, cys: k.cys, speed: k.speed, vmax,
     moving: k.moving, valid: k.valid, ang: k.ang,

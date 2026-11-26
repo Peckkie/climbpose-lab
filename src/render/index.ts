@@ -1,6 +1,7 @@
 // M12 render — draws one frame: live preview while analysing, the analysed frame (LAYERS),
 // or the end sequence (route map → report card).
 import { lerp } from '../util';
+import { camLerp, wallToImage } from '../core/signal/similarity';
 import { drawBackground, viewAt } from './draw';
 import { drawSkeleton } from './skeleton';
 import { STYLES } from './style';
@@ -42,8 +43,8 @@ function drawScene(r: Renderer, tOverride?: number): void {
   const f = Math.max(0, Math.min(D.N - 1.001, (t - D.t0) * D.fps - 0.25)), i = Math.floor(f), a = f - i, i1 = Math.min(i + 1, D.N - 1);
   const v = viewAt(r, i, a);
   const T: TFn = (x, y) => [v.ox + x * v.s, v.oy + y * v.s];
-  const cox = lerp(D.oX[i], D.oX[i1], a), coy = lerp(D.oY[i], D.oY[i1], a);
-  const Tw: TFn = (x, y) => T(x + cox, y + coy); // wall → current image
+  const cam = camLerp(D, i, i1, a);
+  const Tw: TFn = (x, y) => { const q = wallToImage(cam, x, y); return T(q[0], q[1]); }; // wall → current image
   const P: PFn = (k) => {
     const x = lerp(D.X[k][i], D.X[k][i1], a), y = lerp(D.Y[k][i], D.Y[k][i1], a);
     if (!isFinite(x) || !isFinite(y)) return null;

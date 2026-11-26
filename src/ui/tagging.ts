@@ -1,5 +1,6 @@
 // M17 ui — manual hold tagging: click = hand hold, shift-click = foot hold, click a hold = remove.
-import { lerp, fmt } from '../util';
+import { fmt } from '../util';
+import { camLerp, imageToWall } from '../core/signal/similarity';
 import { viewAt } from '../render';
 import { S, R } from '../app/store';
 import { process } from '../app/actions';
@@ -11,8 +12,8 @@ function canvasToWall(e: MouseEvent) {
   const r = cv.getBoundingClientRect();
   const cx = (e.clientX - r.left) * cv.width / r.width, cy = (e.clientY - r.top) * cv.height / r.height;
   const f = Math.max(0, Math.min(D.N - 1.001, (video.currentTime - D.t0) * D.fps - 0.25)), i = Math.floor(f), a = f - i, i1 = Math.min(i + 1, D.N - 1);
-  const v = viewAt(R, i, a), ox = lerp(D.oX[i], D.oX[i1], a), oy = lerp(D.oY[i], D.oY[i1], a);
-  return { x: (cx - v.ox) / v.s - ox, y: (cy - v.oy) / v.s - oy, i: Math.round(f) };
+  const v = viewAt(R, i, a), [x, y] = imageToWall(camLerp(D, i, i1, a), (cx - v.ox) / v.s, (cy - v.oy) / v.s);
+  return { x, y, i: Math.round(f) };
 }
 
 export function initTagging(): void {

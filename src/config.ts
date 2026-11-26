@@ -19,7 +19,9 @@ export const CONFIG = {
   },
   leftRight: { prior: 0.02, crossPenalty: 0.5 },
   moving: { speedMs: 0.08, minRunS: 0.15 },
-  floor: { atWallLo: 0.75, atWallHi: 1.33, percentile: 0.95, maxBaseAboveAllM: 0.8, handUpTrunks: 0.5 },
+  floor: { atWallLo: 0.75, atWallHi: 1.33, percentile: 0.95, maxBaseAboveAllM: 0.8, handUpTrunks: 0.5,
+    baseHandTrunks: 1.0,       // wall-base floor: only frames with a hand this many trunks above the hips (right at the wall)
+    basePercentile: 0.95 },
   attempt: {
     feetUpM: 0.12, cleanRunS: 0.5, mergeGapS: 2, mergeHandUpShare: 0.6, minDurS: 1.5,
     dropMs: 1.2, dropLookbackS: 0.8, dropLookaheadS: 0.5,
@@ -46,7 +48,11 @@ export const CONFIG = {
     ldljLo: -13, ldljSpan: 8, gieLo: 0.4, gieSpan: 1.6, straightArmFull: 0.7, footHandFull: 1.1,
     straightArmDeg: 150, ldljMinSegS: 0.3,
   },
-  camera: { followSigmaS: 0.6 },
+  camera: {
+    followSigmaS: 0.6,
+    trackMedianS: 0.2,        // similarity camera track: median filter (drops single-frame mis-fits) …
+    trackSigmaS: 0.12,        // … then Gaussian smoothing (real camera motion is smooth; fit noise is not)
+  },
 } as const;
 
 export type Config = typeof CONFIG;

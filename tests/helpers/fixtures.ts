@@ -15,6 +15,7 @@ export interface PoseFixture {
   env: Env; N: number; fps: number; t0: number; t1: number; width: number; height: number;
   scale: { xy: number; vis: number };
   x: (number | null)[]; y: (number | null)[]; vis: (number | null)[]; ox: (number | null)[]; oy: (number | null)[];
+  camera?: 'similarity/1'; ca?: (number | null)[]; cb?: (number | null)[]; // scale 1e5; absent = translation-only camera
 }
 
 export function readJson<T>(path: string): T {
@@ -29,6 +30,7 @@ export function toRawTrack(f: PoseFixture): RawTrack {
     N: f.N, fps: f.fps, t0: f.t0, t1: f.t1, vw: f.width, vh: f.height,
     X: dec(f.x), Y: dec(f.y), V: Float32Array.from(f.vis, (q) => (q === null ? 0 : q / sv)),
     OX: dec(f.ox), OY: dec(f.oy),
+    ...(f.ca && f.cb ? { CA: Float32Array.from(f.ca, (q) => (q === null ? 1 : q / 1e5)), CB: Float32Array.from(f.cb, (q) => (q === null ? 0 : q / 1e5)) } : {}),
   };
 }
 

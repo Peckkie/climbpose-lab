@@ -23,7 +23,7 @@ export async function extractTrack(o: ExtractOptions): Promise<{ raw: RawTrack; 
   if (t1 - t0 < 1) { t0 = 0; t1 = video.duration; }
   const N = Math.max(2, Math.floor((t1 - t0) * fps));
   const X = new Float32Array(33 * N).fill(NaN), Y = new Float32Array(33 * N).fill(NaN), V = new Float32Array(33 * N).fill(0);
-  const OX = new Float32Array(N), OY = new Float32Array(N);
+  const OX = new Float32Array(N), OY = new Float32Array(N), CA = new Float32Array(N).fill(1), CB = new Float32Array(N);
   const cam = o.camera ? new CameraTracker(vw, vh) : null;
   let found = 0;
   for (let i = 0; i < N; i++) {
@@ -35,8 +35,10 @@ export async function extractTrack(o: ExtractOptions): Promise<{ raw: RawTrack; 
     try { r = landmarker.detectForVideo(video, ts); } catch (e) { console.warn(e); }
     const lm = r?.landmarks?.[0] ?? null;
     if (lm) { found++; for (let k = 0; k < 33; k++) { X[k * N + i] = lm[k].x * vw; Y[k * N + i] = lm[k].y * vh; V[k * N + i] = lm[k].visibility ?? 1; } }
-    if (cam) [OX[i], OY[i]] = cam.push(video, lm);
+    if (cam) { const m = cam.push(video, lm); CA[i] = m.a; CB[i] = m.b; OX[i] = m.tx; OY[i] = m.ty; }
     o.onFrame?.(i, N, found, lm);
   }
-  return { raw: { N, fps, vw, vh, X, Y, V, OX, OY, t0, t1: t0 + N / fps }, found };
+  const raw: RawTrack = { N, fps, vw, vh, X, Y, V, OX, OY, t0, t1: t0 + N / fps };
+  if (cam) { raw.CA = CA; raw.CB = CB; }
+  return { raw, found };
 }

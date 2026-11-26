@@ -1,12 +1,12 @@
 {
-  "date": "2026-11-26T09:11:43.229Z",
+  "date": "2026-11-26T09:51:28.377Z",
   "summary": {
     "clips": 3,
     "labelledAttempts": 4,
     "attemptRecall": 1,
     "attemptPrecision": 1,
-    "startErrMeanS": 0.1,
-    "endErrMeanS": 0.2,
+    "startErrMeanS": 0.21,
+    "endErrMeanS": 0.28,
     "startWithin0_7s": 1,
     "endWithin0_7s": 1,
     "sendAccuracy": 1,
@@ -28,27 +28,27 @@
     {
       "clip": "IMG_4051",
       "label": "1.5-33.0s not sent",
-      "pred": "1.5-33.4s not sent",
-      "startErrS": 0,
-      "endErrS": 0.4,
-      "iou": 0.99,
+      "pred": "1.2-33.6s not sent",
+      "startErrS": -0.27,
+      "endErrS": 0.63,
+      "iou": 0.97,
       "sentOk": true
     },
     {
       "clip": "IMG_4497",
       "label": "0.0-5.8s not sent",
-      "pred": "0.0-6.0s not sent",
+      "pred": "0.0-5.5s not sent",
       "startErrS": 0,
-      "endErrS": 0.23,
-      "iou": 0.96,
+      "endErrS": -0.3,
+      "iou": 0.95,
       "sentOk": true
     },
     {
       "clip": "IMG_4497",
       "label": "13.0-51.4s sent",
-      "pred": "13.1-51.6s sent",
-      "startErrS": 0.1,
-      "endErrS": 0.17,
+      "pred": "13.3-51.6s sent",
+      "startErrS": 0.27,
+      "endErrS": 0.2,
       "iou": 0.99,
       "sentOk": true
     }

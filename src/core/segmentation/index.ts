@@ -22,14 +22,18 @@ export interface Floor {
  */
 export function estimateFloor(k: Kinematics, cfg = CONFIG.floor): Floor {
   const { YSW, torso, torsoPx, mpp } = k, N = torso.length;
-  const footY = (ids: number[]) => { const o = new Float32Array(N); for (let i = 0; i < N; i++) { let y = 0; for (const j of ids) y += YSW[j][i]; o[i] = y / ids.length; } return o; };
+  // contact point = the foot's lowest landmark (heel or toe): on tiptoe the toe is still on the floor
+  const footY = (ids: number[]) => { const o = new Float32Array(N); for (let i = 0; i < N; i++) { let y = -Infinity; for (const j of ids) y = Math.max(y, YSW[j][i]); o[i] = y; } return o; };
   const fL = footY([29, 31]), fR = footY([30, 32]), lowFoot = new Float32Array(N);
   for (let i = 0; i < N; i++) lowFoot[i] = Math.max(fL[i], fR[i]);
   const handUp = (i: number) => { const hy = (YSW[23][i] + YSW[24][i]) / 2, t = torso[i] || torsoPx; return Math.min(YSW[15][i], YSW[16][i]) < hy - cfg.handUpTrunks * t; };
   const atWallBand = (i: number) => torso[i] > cfg.atWallLo * torsoPx && torso[i] < cfg.atWallHi * torsoPx;
   const atWall = lowFoot.map((v, i) => atWallBand(i) ? v : NaN);
   const floorAll = pct(atWall, cfg.percentile) || pct(lowFoot, cfg.percentile);
-  const floorBase = pct(lowFoot.map((v, i) => handUp(i) && atWallBand(i) ? v : NaN), cfg.percentile);
+  // wall base: feet while the hands are high on the wall (the climber is right at the wall, not
+  // standing back — the mat is off the wall plane, so standing back makes the floor look lower)
+  const handsHigh = (i: number) => { const hy = (YSW[23][i] + YSW[24][i]) / 2, t = torso[i] || torsoPx; return Math.min(YSW[15][i], YSW[16][i]) < hy - cfg.baseHandTrunks * t; };
+  const floorBase = pct(lowFoot.map((v, i) => handsHigh(i) && atWallBand(i) ? v : NaN), cfg.basePercentile);
   const floorY = isFinite(floorBase) && (floorAll - floorBase) * mpp < cfg.maxBaseAboveAllM ? floorBase : floorAll;
   const info: FloorInfo = { baseAboveAllM: +((floorAll - floorBase) * mpp).toFixed(2), used: floorY === floorBase ? 'wall base' : 'all frames' };
   const footH = new Float32Array(N), footHL = new Float32Array(N), footHR = new Float32Array(N);
