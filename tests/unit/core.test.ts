@@ -87,6 +87,23 @@ describe('M04 cleanup', () => {
   });
 });
 
+describe('M04 leg side', () => {
+  it('a leg lifted to the body\'s right from feet-together is labelled right', () => {
+    // back to the camera: left shoulder / hip on the image left. Feet start together, then the leg the
+    // model calls "left" lifts out to the right side and stays there.
+    const R = synthPerson(60), N = R.N, setP = (k: number, i: number, x: number, y: number) => { R.X[k * N + i] = x; R.Y[k * N + i] = y; };
+    for (let i = 0; i < N; i++) {
+      const up = i >= 20 ? Math.min(1, (i - 20) / 10) : 0;
+      // standing leg (labelled right) straight under the hips' centre
+      setP(26, i, 500, 680); setP(28, i, 500, 800); setP(30, i, 498, 810); setP(32, i, 505, 815);
+      // lifted leg (labelled left): from the same spot to the right and up
+      setP(25, i, 500 + 90 * up, 680 - 60 * up); setP(27, i, 500 + 170 * up, 800 - 90 * up); setP(29, i, 498 + 170 * up, 810 - 90 * up); setP(31, i, 505 + 180 * up, 815 - 90 * up);
+    }
+    const out = fixLeftRight(R);
+    for (const i of [35, 45, 55]) { expect(out.X[26 * N + i]).toBeGreaterThan(560); expect(out.X[25 * N + i]).toBeCloseTo(500); }
+  });
+});
+
 describe('M07 hold grouping', () => {
   const H = (limb: string, kind: 'hand' | 'foot', x: number, y: number, i0: number): Hold => ({ limb, kind, x, y, i0, i1: i0 + 10 });
   it('re-grips and matches on one hold share its number; holds further apart do not', () => {
