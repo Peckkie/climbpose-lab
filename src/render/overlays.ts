@@ -1,5 +1,6 @@
 // M12 render — body load (kg · Nm), SENT card and CRUX breakdown.
 import type { Crux, Send, TorqueTrack, LimbKey } from '../types';
+import { holdCounts } from '../core/segmentation';
 import { fmt, lerp } from '../util';
 import { line } from './draw';
 import { loadColor } from './style';
@@ -49,7 +50,7 @@ export function drawSend({ r, ctx, D, st, u, W, H, Tw }: FrameCtx, sd: Send): vo
   ctx.textAlign = 'left'; ctx.fillStyle = GOLD; ctx.font = `700 ${40 * u}px "Space Grotesk"`; ctx.fillText(E.sent, px + 24 * u, py + 44 * u);
   ctx.fillStyle = st.mute; ctx.font = `500 ${15 * u}px "JetBrains Mono"`; ctx.textAlign = 'right'; ctx.fillText(`ATTEMPT ${sd.att} · ${fmt(D.t0 + sd.i / D.fps)}`, px + pw - 24 * u, py + 40 * u);
   ctx.textAlign = 'left'; ctx.fillStyle = st.text; ctx.font = `500 ${19 * u}px "JetBrains Mono"`;
-  const nh = D.holds.filter((h) => h.kind === 'hand' && a && h.i0 >= a.i0 && h.i0 <= a.i1).length;
+  const nh = a ? holdCounts(D.holds.filter((h) => h.i0 >= a.i0 && h.i0 <= a.i1)).handMoves : 0;
   ctx.fillText(`Top hold ${sd.hold ? '#' + sd.hold.n : ''}${a && isFinite(a.lastHoldM as number) ? ` · ${(a.lastHoldM as number).toFixed(1)} m up` : ''} · ${sd.how}`, px + 24 * u, py + 90 * u);
   ctx.fillText(`${a ? a.dur.toFixed(1) + ' s on the wall · ' : ''}${nh} hand moves`, px + 24 * u, py + 122 * u);
   ctx.restore();

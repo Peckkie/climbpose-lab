@@ -34,11 +34,12 @@ export function findCruxes(k: Kinematics, attempts: Attempt[], holds: Hold[], fp
     const hipPct = (footY - hipY) / (footY - handY);
     const ext = Math.hypot(XW[wk][i] - XW[27 + leg][i], YW[wk][i] - YW[27 + leg][i]) / (legLen + torsoPx + armLen);
     const comUp = isFinite(vy[i]) ? -vy[i] * mpp : NaN;
-    // target: nearest hand hold above / level with the hand, not being held right now
+    // target: nearest hand hold above / level with the hand, not being held right now (by either hand)
     const hx = (XW[wk][i] + XW[17 + hand][i] + XW[19 + hand][i]) / 3, hy = (YW[wk][i] + YW[17 + hand][i] + YW[19 + hand][i]) / 3;
     let target: Crux['target'] = null;
+    const heldNow = new Set(holds.filter((h) => h.kind === 'hand' && h.i0 <= i && h.i1 >= i).map((h) => h.n));
     for (const h of holds) {
-      if (h.kind !== 'hand' || (h.i0 <= i && h.i1 >= i)) continue;
+      if (h.kind !== 'hand' || heldNow.has(h.n)) continue;
       const dx = h.x - hx, dy = h.y - hy, dm = Math.hypot(dx, dy) * mpp;
       if (dy * mpp > cfg.targetAboveM || dm < cfg.targetMinM || dm > cfg.targetMaxM) continue;
       if (!target || dm < target.distM) target = { x: h.x, y: h.y, distM: dm };

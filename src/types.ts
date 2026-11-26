@@ -20,6 +20,8 @@ export interface Settings {
   lrFix: boolean;
 }
 
+/** One placement of a hand / foot. `n` = physical hold number (first touch order, per kind):
+ *  re-grips and matches on the same hold share it. */
 export interface Hold {
   n?: number; kind: 'hand' | 'foot'; limb: string;
   x: number; y: number; i0: number; i1: number; manual?: boolean;
@@ -59,7 +61,8 @@ export interface Metrics {
   pathM: number; gie: number; straightness: number;
   ascentM: number; vSpeed: number; highFootM: number;
   immobility: number; straightArm: number; ldlj: number; moves: number;
-  handHolds: number; footHolds: number; footHand: number;
+  handHolds: number; footHolds: number;            // distinct physical holds
+  handMoves: number; footMoves: number; footHand: number; // placements, not counting a limb re-gripping the same hold
   sends: number; cruxes: number;
   handShare: number; peakHandKg: number; peakShoulderNm: number; supportHist: number[];
   highLoadPct: number; bodyKg: number; bodyKgAssumed: boolean; wallDeg: number;
