@@ -1,0 +1,92 @@
+// M00 app — actions: load a clip, analyse it, re-run the core after edits.
+import type { Settings } from '../types';
+import { runPipeline } from '../core/pipeline';
+import { createLandmarker, type ModelKind } from '../pose';
+import { extractTrack } from '../pose/extract';
+import { seekTo } from '../media';
+import { drawFrame, layoutCanvas } from '../render';
+import { $, checked, num, setStatus, video, cv } from '../ui/dom';
+import { renderStats } from '../ui/stats';
+import { updatePhotoInfo } from '../ui/route-panel';
+import { applyEnv, envMode, runEnvDetection } from '../ui/environment-panel';
+import { S, R } from './store';
+
+const RESULT_BUTTONS = ['#rec', '#csv', '#json', '#fixture'];
+
+export function settings(): Settings {
+  const w = num('#weight');
+  return { heightCm: num('#height') || 170, weightKg: w > 0 ? w : null, wallDeg: num('#wall') || 0, lrFix: checked('#lrfix') };
+}
+
+/** Run the analysis core on the current pose track (cached cleanup makes edits fast). */
+export function process(): void {
+  if (!S.raw) return;
+  S.D = runPipeline({ raw: S.raw, settings: settings(), env: envMode(), cache: S.cache,
+    edits: { add: S.holdEdits.add, remove: S.holdEdits.remove, attemptResult: S.attemptResult } });
+  renderStats();
+  for (const id of RESULT_BUTTONS) $(id).disabled = false;
+}
+
+export function lockUI(on: boolean): void {
+  for (const id of ['#analyze', ...RESULT_BUTTONS, '#play', '#seek']) $(id).disabled = on || (RESULT_BUTTONS.includes(id) && !S.D);
+  document.querySelectorAll<HTMLInputElement>('#styles .chip,#frame,#zoom,#file,#loadUrl,[data-show]').forEach((el) => (el.disabled = on));
+}
+
+export function loadSrc(src: string, name: string, cors: boolean): void {
+  S.attemptResult = {}; S.raw = null; S.cache = {}; S.D = null; S.livePose = null; S.routePhoto = null; S.holdEdits = { add: [], remove: [] };
+  updatePhotoInfo(); renderStats();
+  video.removeAttribute('crossorigin');
+  if (cors) video.crossOrigin = 'anonymous';
+  video.src = src;
+  S.srcFile = (name || 'clip').split(/[\\/]/).pop()!.slice(0, 60);
+  S.srcName = (name || 'clip').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_').slice(0, 40);
+  setStatus('Loading video…', 'busy');
+  video.onloadedmetadata = () => {
+    $<HTMLElement>('#empty').style.display = 'none';
+    layoutCanvas(cv, video, S.frame);
+    $('#analyze').disabled = false;
+    $('#t0').value = '0'; $('#t1').value = Math.min(video.duration, 60).toFixed(1); $('#t1').max = video.duration.toFixed(1);
+    setStatus(`Video ${video.videoWidth}×${video.videoHeight} · ${video.duration.toFixed(1)} s — set a range and press "Analyze climb"`, 'ok');
+    S.envDetected = null; applyEnv(); runEnvDetection();
+  };
+  video.onerror = () => setStatus('Could not open the video (a URL must allow CORS)', 'err');
+}
+
+/** M01 media → M02 pose + M03 camera → core. */
+export async function analyze(): Promise<void> {
+  if (S.busy) return; S.busy = true; lockUI(true);
+  const bar = $<HTMLElement>('#bar');
+  try {
+    const kind = $<HTMLSelectElement>('#model').value as ModelKind;
+    setStatus('Loading pose model (' + kind + ')…', 'busy');
+    const landmarker = await createLandmarker(kind);
+    video.pause(); bar.style.display = 'block';
+    const tStart = performance.now(), vw = video.videoWidth, vh = video.videoHeight;
+    const { raw, found } = await extractTrack({
+      video, landmarker, fps: num('#fps'), t0: num('#t0') || 0, t1: num('#t1') || video.duration, camera: checked('#camcomp'),
+      onFrame: (i, N, nFound, lm) => {
+        S.livePose = lm ? lm.map((p) => ({ x: p.x * vw, y: p.y * vh, v: p.visibility ?? 1 })) : null;
+        if (i % 2 === 0) {
+          drawFrame(R, -1);
+          $<HTMLElement>('#bar i').style.width = (100 * (i + 1) / N).toFixed(1) + '%';
+          const el = (performance.now() - tStart) / 1000, eta = el / (i + 1) * (N - i - 1);
+          setStatus(`Analyzing frame ${i + 1}/${N} · climber found ${Math.round(100 * nFound / (i + 1))}% · ~${Math.ceil(eta)} s left`, 'busy');
+        }
+      },
+    });
+    S.livePose = null; S.raw = raw; S.cache = {};
+    const N = raw.N;
+    if (found < N * 0.2) setStatus('Climber found in very few frames (' + Math.round(100 * found / N) + '%). Try the Heavy model or a clip where the climber is larger.', 'err');
+    else setStatus('Done · climber found in ' + Math.round(100 * found / N) + '% of frames — press play', 'ok');
+    process();
+    await seekTo(video, raw.t0);
+  } catch (e) { console.error(e); setStatus('Analysis failed: ' + (e as Error).message, 'err'); }
+  bar.style.display = 'none'; S.busy = false; lockUI(false);
+}
+
+export async function gotoCrux(k: number): Promise<void> {
+  const D = S.D, c = D && D.cruxes[k]; if (!D || !c) return;
+  video.pause(); S.endCard = 0; S.show.crux = 1;
+  const cb = document.querySelector<HTMLInputElement>('[data-show=crux]'); if (cb) cb.checked = true;
+  await seekTo(video, D.t0 + (c.i + 0.25) / D.fps);
+}

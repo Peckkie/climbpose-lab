@@ -1,2 +1,3 @@
-// M00 entry point.
-import './app/app.js';
+// Entry point.
+import { start } from './app';
+start();
