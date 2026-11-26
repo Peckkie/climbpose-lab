@@ -5,6 +5,7 @@ import { viewAt } from '../render';
 import { S, R } from '../app/store';
 import { process } from '../app/actions';
 import { $, cv, setStatus, video } from './dom';
+import { t } from './i18n';
 
 /** Canvas click → wall coordinates at the current frame. */
 function canvasToWall(e: MouseEvent) {
@@ -25,11 +26,11 @@ export function initTagging(): void {
     if (near) {
       const ai = S.holdEdits.add.findIndex((h) => Math.abs(h.x - near.x) < 1 && Math.abs(h.y - near.y) < 1);
       if (ai >= 0) S.holdEdits.add.splice(ai, 1); else S.holdEdits.remove.push({ x: near.x, y: near.y, kind: near.kind });
-      setStatus(`Removed ${near.kind} hold`, 'ok');
+      setStatus(t('st.holdRemoved', { kind: t(near.kind === 'hand' ? 'kind.hand' : 'kind.foot') }), 'ok');
     } else {
       const kind = e.shiftKey ? 'foot' : 'hand';
       S.holdEdits.add.push({ limb: 'tag', kind, x: w.x, y: w.y, i0: w.i, i1: Math.min(D.N - 1, w.i + Math.round(D.fps * 0.5)), manual: true });
-      setStatus(`Tagged ${kind} hold at ${fmt(video.currentTime)}`, 'ok');
+      setStatus(t('st.holdTagged', { kind: t(kind === 'hand' ? 'kind.hand' : 'kind.foot'), t: fmt(video.currentTime) }), 'ok');
     }
     process();
   });

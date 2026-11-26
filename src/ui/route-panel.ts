@@ -5,6 +5,7 @@ import { fmt } from '../util';
 import { S } from '../app/store';
 import { $, setStatus, video } from './dom';
 import { envMode } from './environment-panel';
+import { t } from './i18n';
 
 let GYMS: Gym[] = loadGyms();
 const sel = () => $<HTMLSelectElement>('#gym');
@@ -12,7 +13,7 @@ const currentGym = (): Gym => GYMS[+sel().value] || GYMS[0];
 
 export function fillGyms(want?: number): void {
   const env = envMode(), g = sel();
-  g.innerHTML = GYMS.map((x, k) => ((x.env || 'gym') === env ? `<option value="${k}">${x.name.replace(/</g, '&lt;')}</option>` : '')).join('') + `<option value="add">+ Add ${env === 'rock' ? 'crag' : 'gym'}…</option>`;
+  g.innerHTML = GYMS.map((x, k) => ((x.env || 'gym') === env ? `<option value="${k}">${x.name.replace(/</g, '&lt;')}</option>` : '')).join('') + `<option value="add">${env === 'rock' ? t('crag.add') : t('gym.add')}</option>`;
   g.value = String(want != null ? want : store.get('climbpose.gymSel', 0));
   if (!g.value || g.value === 'add') { const first = g.querySelector('option'); g.value = first ? first.value : 'add'; }
   fillGrades(); updateGymPin();
@@ -47,9 +48,9 @@ function updateGymPin(): void {
 
 export function updatePhotoInfo(): void {
   const r = S.routePhoto;
-  $<HTMLElement>('#photoInfo').textContent = !r ? 'Auto: the route map uses the frame where the attempt starts. Best results: take the route photo from the same spot as the camera, camera on a tripod.'
-    : r.kind === 'upload' ? `Photo ${r.w}×${r.h} — mapped assuming it was shot from the camera position (same framing as the video).`
-    : `Using the video frame at ${fmt(r.t ?? 0)} as the route photo.`;
+  $<HTMLElement>('#photoInfo').textContent = !r ? t('photo.info.auto')
+    : r.kind === 'upload' ? t('photo.info.upload', { w: r.w, h: r.h })
+    : t('photo.info.frame', { t: fmt(r.t ?? 0) });
 }
 
 export function initRoutePanel(): void {
@@ -58,8 +59,8 @@ export function initRoutePanel(): void {
     if (!r) { info.style.display = 'none'; return; } info.style.display = 'block';
     if (r.name && !$('#gymName').value.trim()) $('#gymName').value = r.name;
     info.textContent = r.name ? `📍 ${r.name}${r.lat != null ? ` · ${r.lat.toFixed(5)}, ${r.lng!.toFixed(5)}` : ''}`
-      : r.short ? '📍 Short link saved — type the gym name below (short links can’t be read from the page).'
-      : r.lat != null ? `📍 ${r.lat.toFixed(5)}, ${r.lng!.toFixed(5)} — type the gym name below.` : 'Not a Google Maps link?';
+      : r.short ? t('map.short')
+      : r.lat != null ? t('map.coords', { lat: r.lat.toFixed(5), lng: r.lng!.toFixed(5) }) : t('map.notMaps');
   };
   sel().onchange = () => {
     if (sel().value === 'add') { $<HTMLElement>('#gymForm').style.display = 'block'; $('#gymMap').focus(); updateGymPin(); return; }
@@ -83,7 +84,7 @@ export function initRoutePanel(): void {
   $('#photoFile').onchange = async (e) => {
     const f = (e.target as HTMLInputElement).files?.[0]; if (!f) return;
     try { const bmp = await createImageBitmap(f, { imageOrientation: 'from-image' }); S.routePhoto = { kind: 'upload', el: bmp, w: bmp.width, h: bmp.height }; updatePhotoInfo(); }
-    catch { setStatus('Could not read that photo', 'err'); }
+    catch { setStatus(t('st.photoErr'), 'err'); }
   };
   $<HTMLButtonElement>('#photoFrame').onclick = () => {
     if (!video.videoWidth) return;

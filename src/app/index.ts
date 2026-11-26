@@ -1,12 +1,16 @@
 // M00 app — wires the UI panels to the store and actions.
-import { $ } from '../ui/dom';
+import { $, setStatus } from '../ui/dom';
 import { initPlayer } from '../ui/player';
 import { initRoutePanel } from '../ui/route-panel';
 import { initEnvironmentPanel } from '../ui/environment-panel';
 import { initHistoryPanel } from '../ui/history-panel';
 import { initTagging } from '../ui/tagging';
 import { initExportPanel } from '../ui/export-panel';
-import { initLabelPanel } from '../ui/label-panel';
+import { initLabelPanel, refreshLabels } from '../ui/label-panel';
+import { initLangSwitch, onLangChange, t } from '../ui/i18n';
+import { renderStats } from '../ui/stats';
+import { envLabels } from '../ui/environment-panel';
+import { fillGyms, updatePhotoInfo } from '../ui/route-panel';
 import { S } from './store';
 import { analyze, loadSrc, process } from './actions';
 
@@ -26,6 +30,8 @@ function initSource(): void {
 }
 
 export function start(): void {
+  initLangSwitch();
+  setStatus(t('status.start'));
   initRoutePanel();
   initEnvironmentPanel();
   initHistoryPanel();
@@ -34,6 +40,11 @@ export function start(): void {
   initExportPanel();
   initLabelPanel();
   initPlayer();
+  envLabels(); updatePhotoInfo();
+  onLangChange(() => {
+    renderStats(); refreshLabels(); envLabels(); updatePhotoInfo(); fillGyms();
+    if (S.busy) $<HTMLButtonElement>('#analyze').textContent = t('src.cancel');
+  });
   document.fonts?.load('700 20px "Space Grotesk"');
   // debugging handle
   Object.assign(window, { __climbpose: Object.assign(S, { reprocess: () => { if (S.raw) { S.cache = {}; process(); } } }) });
