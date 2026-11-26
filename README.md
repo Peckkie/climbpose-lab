@@ -48,6 +48,23 @@ History keeps the two apart (environment is part of the route key).
 
 Not in v0.1 yet: history across sessions of the same route (needs storage beyond one file), automatic gym grade lookup.
 
+## Development (v0.3 refactor, in progress)
+
+The app you open is still the single-file v0.2 `index.html`. The analysis core is being moved into
+TypeScript modules under `src/core/` (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)), proven
+identical to v0.2 by tests on recorded pose data.
+
+```bash
+npm install
+npm test            # unit tests + parity with v0.2 on every fixture
+npm run eval        # accuracy vs hand-checked labels → tests/eval/last-report.json
+npm run typecheck
+npm run lint:layers # core must not touch the DOM / import upper layers
+```
+
+New test clip: analyze it in the app, press **Pose fixture (dev)**, gzip the `.pose.json` and put
+it with the `.v02.golden.json` in `tests/fixtures/` (or `tests/fixtures/local/` if it can't be shared).
+
 ## Run
 
 Open `index.html` in Chrome (internet needed the first time to load the model). No install.

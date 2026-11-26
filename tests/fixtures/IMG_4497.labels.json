@@ -1,0 +1,22 @@
+{
+  "format": "climbpose.labels/1",
+  "clip": "IMG_4497",
+  "status": "draft",
+  "labeledBy": "claude-visual-check",
+  "note": "Draft: checked frame-by-frame against the video by Claude on 2026-11-05/26. Needs confirmation by a climber.",
+  "toleranceS": 0.7,
+  "attempts": [
+    {
+      "start_s": 0.0,
+      "end_s": 5.8,
+      "sent": false,
+      "note": "already on the wall at 0.3 s; jumps off ~5.5 s"
+    },
+    {
+      "start_s": 13.0,
+      "end_s": 51.4,
+      "sent": true,
+      "note": "hands on start hold 9.4 s but one foot on floor until ~13 s; matched top ~38.9 s, down-climbs, drops ~51.4 s"
+    }
+  ]
+}
