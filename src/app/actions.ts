@@ -1,8 +1,8 @@
 // M00 app — actions: load a clip, analyse it, re-run the core after edits.
 import type { Settings } from '../types';
 import { runPipeline } from '../core/pipeline';
-import { createLandmarker, type ModelKind } from '../pose';
-import { extractTrack } from '../pose/extract';
+import type { ModelKind } from '../pose';
+import { extractTrack, Cancelled } from '../pose/extract';
 import { seekTo } from '../media';
 import { drawFrame, layoutCanvas } from '../render';
 import { $, checked, num, setStatus, video, cv } from '../ui/dom';
@@ -54,18 +54,25 @@ export function loadSrc(src: string, name: string, cors: boolean): void {
   video.onerror = () => setStatus('Could not open the video (a URL must allow CORS)', 'err');
 }
 
-/** M01 media → M02 pose + M03 camera → core. */
+let abort: AbortController | null = null;
+const analyzeBtn = () => $<HTMLButtonElement>('#analyze');
+
+/** M01 media → M02 pose + M03 camera → core. While running, the Analyze button cancels. */
 export async function analyze(): Promise<void> {
-  if (S.busy) return; S.busy = true; lockUI(true);
+  if (S.busy) { if (abort) { abort.abort(); setStatus('Cancelling…', 'busy'); } return; }
+  S.busy = true; lockUI(true);
+  abort = new AbortController();
+  const btn = analyzeBtn(), label = btn.textContent; btn.disabled = false; btn.textContent = '■ Cancel analysis';
   const bar = $<HTMLElement>('#bar');
   try {
     const kind = $<HTMLSelectElement>('#model').value as ModelKind;
     setStatus('Loading pose model (' + kind + ')…', 'busy');
-    const landmarker = await createLandmarker(kind);
     video.pause(); bar.style.display = 'block';
-    const tStart = performance.now(), vw = video.videoWidth, vh = video.videoHeight;
+    let tStart = 0, mode = '';
+    const vw = video.videoWidth, vh = video.videoHeight;
     const { raw, found } = await extractTrack({
-      video, landmarker, fps: num('#fps'), t0: num('#t0') || 0, t1: num('#t1') || video.duration, camera: checked('#camcomp'),
+      video, model: kind, fps: num('#fps'), t0: num('#t0') || 0, t1: num('#t1') || video.duration, camera: checked('#camcomp'), signal: abort.signal,
+      onMode: (m) => { mode = m; tStart = performance.now(); },
       onFrame: (i, N, nFound, lm) => {
         S.livePose = lm ? lm.map((p) => ({ x: p.x * vw, y: p.y * vh, v: p.visibility ?? 1 })) : null;
         if (i % 2 === 0) {
@@ -82,7 +89,12 @@ export async function analyze(): Promise<void> {
     else setStatus('Done · climber found in ' + Math.round(100 * found / N) + '% of frames — press play', 'ok');
     process();
     await seekTo(video, raw.t0);
-  } catch (e) { console.error(e); setStatus('Analysis failed: ' + (e as Error).message, 'err'); }
+  } catch (e) {
+    S.livePose = null;
+    if (e instanceof Cancelled) setStatus('Analysis cancelled' + (S.D ? ' — showing the previous result' : ''), 'ok');
+    else { console.error(e); setStatus('Analysis failed: ' + (e as Error).message, 'err'); }
+  }
+  abort = null; btn.textContent = label;
   bar.style.display = 'none'; S.busy = false; lockUI(false);
 }
 

@@ -89,7 +89,7 @@ When you change analysis behaviour on purpose: `npm run golden:update`, review t
 to load the model), or `npm run dev`.
 
 1. Drop a video → set the analyze range and the climber's height
-2. **Analyze climb** (Heavy model at 15 fps is a good default; ~1.5× clip length on an M3)
+2. **Analyze climb** (Heavy model at 15 fps is a good default). The pose model runs in a background worker, so the page stays usable; press the button again to cancel
 3. Play, pick a look, then **Export video with overlays**
 
 ## Crux breakdown (why did I fall?)
