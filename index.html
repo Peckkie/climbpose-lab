@@ -171,6 +171,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
         <button class="btn small" id="csv" disabled>Per-frame CSV</button>
         <button class="btn small" id="json" disabled>Summary JSON</button>
       </div>
+      <button class="btn small" id="fixture" disabled style="margin-top:8px;width:100%" title="For developers: raw pose data + v0.2 results, used by the automated tests">Pose fixture (dev)</button>
       <div id="dlArea"></div>
       <details>
         <summary>How it is computed</summary>
@@ -333,7 +334,7 @@ async function analyze(){
   }catch(e){console.error(e);setStatus('Analysis failed: '+e.message,'err');}
   $('#bar').style.display='none';S.busy=false;lockUI(false);
 }
-function lockUI(on){for(const id of ['#analyze','#rec','#csv','#json','#play','#seek'])$(id).disabled=on||(['#rec','#csv','#json'].includes(id)&&!S.D);document.querySelectorAll('#styles .chip,#frame,#zoom,#file,#loadUrl,[data-show]').forEach(el=>el.disabled=on);}
+function lockUI(on){for(const id of ['#analyze','#rec','#csv','#json','#fixture','#play','#seek'])$(id).disabled=on||(['#rec','#csv','#json','#fixture'].includes(id)&&!S.D);document.querySelectorAll('#styles .chip,#frame,#zoom,#file,#loadUrl,[data-show]').forEach(el=>el.disabled=on);}
 $('#analyze').onclick=analyze;
 
 /* ---------- camera motion (global translation of the wall) ---------- */
@@ -837,7 +838,7 @@ function process(){
   M.cameraTravelPx=Math.round(Math.hypot(oX[N-1],oY[N-1]));
   S.D={sends,load,tq,handShare,cruxes,attempts,onWall,comH,footH,N,fps,vw,vh,t0:R.t0,t1:R.t1,X,Y,XW,YW,oX,oY,V,mpp,torsoPx,comX,comY,cxs,cys,speed,vmax,moving,ang,holds,M,sc,camX,camY,y0,valid};
   renderStats();
-  for(const id of ['#rec','#csv','#json'])$(id).disabled=false;
+  for(const id of ['#rec','#csv','#json','#fixture'])$(id).disabled=false;
 }
 
 /* ---------- sidebar report ---------- */
@@ -1554,6 +1555,31 @@ $('#json').onclick=()=>{
   const out={app:'CLIMB/POSE v0.2',environment:envMode(),environment_detected:S.envDetected||null,route:{...routeInfo(),photo:S.routePhoto?S.routePhoto.kind:'auto',manual_hold_edits:{added:S.holdEdits.add.length,removed:S.holdEdits.remove.length}},source:S.srcName,video:{w:D.vw,h:D.vh,fps_analyzed:D.fps,frames:D.N,t_start:D.t0,t_end:D.t1},climber_height_cm:+$('#height').value,meters_per_px:D.mpp,
     metrics:D.M,scores:D.sc,cruxes:D.cruxes.map(c=>({attempt:c.att,t:+(D.t0+c.i/D.fps).toFixed(2),reach_hand:c.hand?'R':'L',push_leg:c.leg?'R':'L',knee_deg:Math.round(c.knee),elbow_deg:Math.round(c.elbow),hip_pct:Math.round(c.hipPct*100),reach_pct:Math.round(c.ext*100),com_up_ms:+(+c.comUp).toFixed(2),gap_to_next_hold_cm:c.target?Math.round(c.target.distM*100):null,cues:c.cues.map(q=>q.t),tips:c.tips,hand_load_share_pct:isFinite(c.handShare)?Math.round(c.handShare*100):null})),attempts:D.attempts.map(a=>({sent:a.sent,result_source:a.override,last_hold:a.lastHold?{n:a.lastHold.n,height_m:+(+a.lastHoldM).toFixed(2)}:null,n:a.n,t_start:+(D.t0+a.i0/D.fps).toFixed(2),t_end:+(D.t0+a.i1/D.fps).toFixed(2),duration_s:+a.dur.toFixed(2),high_foot_m:+a.highFootM.toFixed(2),high_com_m:+a.highComM.toFixed(2),end:a.end})),holds:D.holds.map(h=>({n:h.n,limb:h.limb,kind:h.kind,x:+(h.x/D.vw).toFixed(4),y:+(h.y/D.vh).toFixed(4),t_start:+(h.i0/D.fps).toFixed(2),t_end:+(h.i1/D.fps).toFixed(2)}))};
   download(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),`${S.srcName}_climbpose_summary.json`);
+};
+
+// Developer export: pose fixture (raw pose + camera track, rounded) and the v0.2 "golden" results
+// computed from exactly that rounded data. Put both in tests/fixtures/ and run `npm test`.
+$('#fixture').onclick=()=>{
+  const R=S.raw;if(!R||!S.D)return;
+  const r1=v=>isFinite(v)?Math.round(v*10):null,r3=v=>isFinite(v)?Math.round(v*1000):null,rn=(v,d=4)=>isFinite(v)?+(+v).toFixed(d):null;
+  const w=+$('#weight').value>0?+$('#weight').value:null;
+  const fx={format:'climbpose.pose/1',clip:S.srcFile||S.srcName,createdWith:'v0.2',settings:{heightCm:+$('#height').value||170,fps:R.fps,model:$('#model').value,wallDeg:+$('#wall').value||0,weightKg:w,cameraCompensation:$('#camcomp').checked,lrFix:$('#lrfix').checked},
+    env:envMode(),envScores:S.envScores||null,N:R.N,fps:R.fps,t0:R.t0,t1:R.t1,width:R.vw,height:R.vh,scale:{xy:10,vis:1000},
+    x:Array.from(R.X,r1),y:Array.from(R.Y,r1),vis:Array.from(R.V,r3),ox:Array.from(R.OX,r1),oy:Array.from(R.OY,r1)};
+  const dec=(a,sc)=>Float32Array.from(a,q=>q===null?NaN:q/sc);
+  S.raw={N:R.N,fps:R.fps,vw:R.vw,vh:R.vh,t0:R.t0,t1:R.t1,X:dec(fx.x,10),Y:dec(fx.y,10),V:Float32Array.from(fx.vis,q=>q===null?0:q/1000),OX:dec(fx.ox,10),OY:dec(fx.oy,10)};
+  S.reprocess();
+  const D=S.D,M=D.M,N=D.N,ev=a=>{const o=[];for(let i=0;i<N;i+=10)o.push(rn(a[i]));return o;};
+  const metrics={};for(const [k,v] of Object.entries(M))if(typeof v==='number')metrics[k]=rn(v,6);else if(v&&typeof v==='object')metrics[k]=JSON.parse(JSON.stringify(v));
+  const g={env:envMode(),mpp:rn(D.mpp,8),torsoPx:rn(D.torsoPx,4),y0:rn(D.y0,4),metrics,scores:Object.fromEntries(Object.entries(D.sc).map(([k,v])=>[k,rn(v,6)])),
+    holds:D.holds.map(h=>({n:h.n,kind:h.kind,limb:h.limb,x:rn(h.x,3),y:rn(h.y,3),i0:h.i0,i1:h.i1})),
+    attempts:D.attempts.map(a=>({n:a.n,i0:a.i0,i1:a.i1,end:a.end,highFootM:rn(a.highFootM),highComM:rn(a.highComM),sent:a.sent,sentAuto:a.sentAuto,sendI:a.sendI,lastHold:a.lastHold?a.lastHold.n:null,lastHoldM:rn(a.lastHoldM)})),
+    sends:D.sends.map(x=>({att:x.att,i:x.i,how:x.how,hold:x.hold?x.hold.n:null})),
+    cruxes:D.cruxes.map(c=>({att:c.att,i:c.i,hand:c.hand,leg:c.leg,knee:rn(c.knee),elbow:rn(c.elbow),hipPct:rn(c.hipPct),ext:rn(c.ext),comUp:rn(c.comUp),handShare:rn(c.handShare),target:c.target?rn(c.target.distM):null,lastHold:c.lastHold?c.lastHold.n:null,cues:c.cues.map(q=>q.t),tips:c.tips})),
+    series:{comX:ev(D.comX),cys:ev(D.cys),speed:ev(D.speed),handShare:ev(D.handShare),LH:ev(D.load.LH),RF:ev(D.load.RF),shL:ev(D.tq.shL),footH:ev(D.footH),onWall:Array.from(D.onWall).join(''),moving:Array.from(D.moving).join('')}};
+  download(new Blob([JSON.stringify(fx)],{type:'application/json'}),`${S.srcName}.pose.json`);
+  download(new Blob([JSON.stringify(g)],{type:'application/json'}),`${S.srcName}.v02.golden.json`);
+  setStatus('Pose fixture + golden results saved — copy both into tests/fixtures/','ok');
 };
 
 document.fonts&&document.fonts.load('700 20px "Space Grotesk"');

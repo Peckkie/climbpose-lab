@@ -13,3 +13,6 @@ dist/
 
 # OS
 .DS_Store
+
+# Pose fixtures from clips we may not share (other people's social media etc.)
+tests/fixtures/local/

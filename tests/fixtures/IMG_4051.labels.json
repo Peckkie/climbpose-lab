@@ -1,0 +1,16 @@
+{
+  "format": "climbpose.labels/1",
+  "clip": "IMG_4051",
+  "status": "draft",
+  "labeledBy": "claude-visual-check",
+  "note": "Draft: checked frame-by-frame against the video by Claude on 2026-11-05/26. Needs confirmation by a climber.",
+  "toleranceS": 0.7,
+  "attempts": [
+    {
+      "start_s": 1.5,
+      "end_s": 33.0,
+      "sent": false,
+      "note": "one foot on floor at 0.5 s, both feet on holds by 2.0 s; high-steps at the triangle volume 30.9 s, comes off ~33.0 s"
+    }
+  ]
+}

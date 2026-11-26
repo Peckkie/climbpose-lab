@@ -32,10 +32,10 @@
 
 ## Phase 0 · ตั้ง repo (ครึ่งวัน)
 
-- [ ] `.gitignore`: `*.MOV *.mov *.MP4 *.mp4 results/ .DS_Store node_modules/ dist/`
-- [ ] commit แรก = v0.2 ตามที่เป็นอยู่ (`index.html`, `README.md`, `docs/`) แล้วติด tag `v0.2`
-- [ ] ตั้ง remote `https://github.com/Peckkie/climbpose-lab.git` และ push
-- [ ] เขียน `CONTRIBUTING.md` สั้นๆ: branch ต่อฟีเจอร์ (`feat/…`, `fix/…`), PR เล็ก, ต้องรัน test + eval ก่อน merge
+- [x] `.gitignore`: `*.MOV *.mov *.MP4 *.mp4 results/ .DS_Store node_modules/ dist/`
+- [x] commit แรก = v0.2 ตามที่เป็นอยู่ (`index.html`, `README.md`, `docs/`) แล้วติด tag `v0.2`
+- [x] ตั้ง remote `https://github.com/Peckkie/climbpose-lab.git` และ push
+- [x] เขียน `CONTRIBUTING.md` สั้นๆ: branch ต่อฟีเจอร์ (`feat/…`, `fix/…`), PR เล็ก, ต้องรัน test + eval ก่อน merge
 
 **เสร็จเมื่อ:** clone repo แล้วดับเบิลคลิก `index.html` ใช้งานได้เหมือนเดิม และใน repo ไม่มีไฟล์วิดีโอ
 
@@ -45,15 +45,15 @@
 
 ย้ายโค้ดเข้าโมดูลแบบ "แกะทีละชิ้น" — แต่ละขั้นต้องได้ผลเหมือนเดิมเป๊ะ
 
-1. [ ] Vite + TypeScript scaffold, `types.ts`, `config.ts` (ย้ายตัวเลขเกณฑ์ทั้งหมดมารวม)
-2. [ ] **M05 signal** → unit test ครบ
-3. [ ] **M04 cleanup, M06 kinematics** → test
-4. [ ] **M07 segmentation, M08 results, M09 metrics, M10 crux, M11 load** → `core/pipeline.ts`
+1. [x] Vite + TypeScript scaffold, `types.ts`, `config.ts` (ย้ายตัวเลขเกณฑ์ทั้งหมดมารวม)
+2. [x] **M05 signal** → unit test ครบ
+3. [x] **M04 cleanup, M06 kinematics** → test
+4. [x] **M07 segmentation, M08 results, M09 metrics, M10 crux, M11 load** → `core/pipeline.ts` — ผลตรงกับ v0.2 ทุกคลิป (parity test)
 5. [ ] **M01 media, M02 pose, M03 camera** แยกออกจาก `analyze`
 6. [ ] **M12 render** เป็นระบบ layer, **M13 export** ใช้ timeline segment
 7. [ ] **M14 environment, M15 route, M16 history, M17 ui, M00 app** (store + actions)
 8. [ ] build 2 แบบ: static (deploy) และไฟล์เดียว (`vite-plugin-singlefile`)
-9. [ ] GitHub Actions: typecheck + lint (กติกา import ชั้น) + unit test + build
+9. [x] GitHub Actions: typecheck + lint (กติกา import ชั้น) + unit test (build เพิ่มเมื่อมีแอป Vite)
 
 **เสร็จเมื่อ:**
 - `src/core/**` ไม่มีการอ้าง DOM (lint ผ่าน)
@@ -66,10 +66,10 @@
 
 ## Phase 2 · ชุดทดสอบและตัวชี้วัด (1 สัปดาห์)
 
-1. [ ] `tools/dump-fixture.html`: เลือกคลิป → รันโมเดล → ได้ `*.pose.json` (raw pose + camera track)
-2. [ ] สร้าง fixture จากคลิปที่มี: IMG_4016, 4497, 4051, 4012, 4019, 4033, 4034, 4502, VID_25690908001043760, test01 (test2 ใช้ภายในเท่านั้น)
-3. [ ] ติดป้าย `*.labels.json` ต่อคลิป: ช่วง attempt, ส่ง/ไม่ส่ง, top/last hold, เฟรม crux, ช่วงที่ซ้าย/ขวาผิด — ทำผ่านหน้า labeling ง่ายๆ ในแอป (player + ปุ่ม mark)
-4. [ ] `tests/eval`: รายงานตัวชี้วัดในตารางเป้าหมายด้านบน + เก็บผลเป็นไฟล์ เพื่อเทียบระหว่าง commit
+1. [x] ปุ่ม **Pose fixture (dev)** ในแอป: ได้ `*.pose.json` (raw pose + camera track) + `*.v02.golden.json`
+2. [x] สร้าง fixture จากคลิปที่มี (test01 / test2 อยู่ใน `tests/fixtures/local/` ไม่ขึ้น repo)
+3. [~] ติดป้าย `*.labels.json` ต่อคลิป (ร่างแล้ว 3 คลิป: IMG_4016, 4497, 4051 — รอนักปีนยืนยัน, ยังไม่มีหน้า labeling): ช่วง attempt, ส่ง/ไม่ส่ง, top/last hold, เฟรม crux, ช่วงที่ซ้าย/ขวาผิด — ทำผ่านหน้า labeling ง่ายๆ ในแอป (player + ปุ่ม mark)
+4. [x] `tests/eval`: รายงานตัวชี้วัด + เก็บผลใน `tests/eval/last-report.json` (ตอนนี้วัด attempt, ขอบเวลา, ส่ง/ไม่ส่ง, crux; ซ้าย/ขวายังไม่ได้วัด)
 5. [ ] ขอให้พี่ดิส (V8) ติดป้ายเฟรม crux และเหตุที่หลุด ใน 5–10 attempt เพื่อเป็นมาตรฐานจากผู้เชี่ยวชาญ
 
 **เสร็จเมื่อ:** มีตัวเลข baseline ของ v0.2 ครบทุกตัวชี้วัด

@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-26T04:54:26.364Z",
+  "summary": {
+    "clips": 3,
+    "labelledAttempts": 4,
+    "attemptRecall": 1,
+    "attemptPrecision": 1,
+    "startErrMeanS": 1.1,
+    "endErrMeanS": 0.2,
+    "startWithin0_7s": 0.75,
+    "endWithin0_7s": 1,
+    "sendAccuracy": 1,
+    "cruxCoverage": 1
+  },
+  "rows": [
+    {
+      "clip": "IMG_4016",
+      "label": "4.5-32.5s sent",
+      "pred": "4.3-32.5s sent",
+      "startErrS": -0.23,
+      "endErrS": 0,
+      "iou": 0.99,
+      "sentOk": true
+    },
+    {
+      "clip": "IMG_4051",
+      "label": "1.5-33s not sent",
+      "pred": "5.2-33.4s not sent",
+      "startErrS": 3.73,
+      "endErrS": 0.4,
+      "iou": 0.87,
+      "sentOk": true
+    },
+    {
+      "clip": "IMG_4497",
+      "label": "0-5.8s not sent",
+      "pred": "0.0-6.0s not sent",
+      "startErrS": 0,
+      "endErrS": 0.23,
+      "iou": 0.96,
+      "sentOk": true
+    },
+    {
+      "clip": "IMG_4497",
+      "label": "13-51.4s sent",
+      "pred": "13.4-51.6s sent",
+      "startErrS": 0.43,
+      "endErrS": 0.17,
+      "iou": 0.98,
+      "sentOk": true
+    }
+  ]
+}
