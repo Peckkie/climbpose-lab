@@ -1,15 +1,8 @@
 // M02 pose — MediaPipe Pose Landmarker, loaded from the CDN on first use.
 
-export const MP_VER = '0.10.14';
-const MP_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}/vision_bundle.mjs`;
-const WASM_URL = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}/wasm`;
-export const MODEL_URL = {
-  full: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task',
-  heavy: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task',
-} as const;
-export type ModelKind = keyof typeof MODEL_URL;
+import { MODEL_URL, MP_URL, WASM_URL, POSE_OPTIONS, type ModelKind, type Landmark } from './config';
+export { MODEL_URL, MP_VER, type ModelKind, type Landmark } from './config';
 
-export interface Landmark { x: number; y: number; z?: number; visibility?: number; }
 export interface PoseLandmarker {
   detectForVideo(src: HTMLVideoElement, timestampMs: number): { landmarks?: Landmark[][] } | undefined;
   close(): void;
@@ -25,8 +18,7 @@ export async function createLandmarker(kind: ModelKind): Promise<PoseLandmarker>
   if (!fileset) fileset = await mp.FilesetResolver.forVisionTasks(WASM_URL);
   if (current) { try { current.close(); } catch { /* already closed */ } current = null; }
   const make = (delegate: 'GPU' | 'CPU'): Promise<PoseLandmarker> => mp.PoseLandmarker.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: MODEL_URL[kind], delegate }, runningMode: 'VIDEO', numPoses: 1,
-    minPoseDetectionConfidence: 0.4, minPosePresenceConfidence: 0.4, minTrackingConfidence: 0.5,
+    baseOptions: { modelAssetPath: MODEL_URL[kind], delegate }, ...POSE_OPTIONS,
   });
   try { current = await make('GPU'); } catch { current = await make('CPU'); }
   return current;
