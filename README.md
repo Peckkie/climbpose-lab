@@ -2,7 +2,7 @@
 
 > Repo: [Peckkie/climbpose-lab](https://github.com/Peckkie/climbpose-lab) · Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
 
-Climbing movement lab in a single HTML file. Load a climbing video (outdoor rock or gym wall, tripod or handheld), and it:
+Climbing movement lab that runs in the browser (builds to a single HTML file). Load a climbing video (outdoor rock or gym wall, tripod or handheld), and it:
 
 - runs **MediaPipe Pose Landmarker** (33 keypoints) frame by frame in the browser
 - **drops false detections** (pose jumping to the wall/floor for a few frames) and starts a fresh pose model per analysis, so a new clip never inherits the previous clip's tracking position
@@ -50,16 +50,21 @@ Not in v0.1 yet: history across sessions of the same route (needs storage beyond
 
 ## Development (v0.3 refactor, in progress)
 
-The app you open is still the single-file v0.2 `index.html`. The analysis core is being moved into
-TypeScript modules under `src/core/` (see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)), proven
-identical to v0.2 by tests on recorded pose data.
+The app is now a Vite + TypeScript project. Analysis runs through the modules in `src/`
+(see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)): `media` → `pose` + `camera` → `core/pipeline`.
+The UI, drawing and export code still sits in `src/app/app.js` (moved from v0.2 unchanged) and is
+being split into `render`, `export`, `route`, `environment`, `history` and `ui` next.
+The original single-file app is tag `v0.2`.
 
 ```bash
 npm install
-npm test            # unit tests + regression vs accepted results on every fixture
-npm run eval        # accuracy vs hand-checked labels → tests/eval/last-report.json
+npm run dev           # app at http://localhost:5173
+npm run build         # dist/ — static site to deploy
+npm run build:single  # dist-single/index.html — one file, open it by double-click
+npm test              # unit tests + regression vs accepted results on every fixture
+npm run eval          # accuracy vs hand-checked labels → tests/eval/last-report.json
 npm run typecheck
-npm run lint:layers # core must not touch the DOM / import upper layers
+npm run lint:layers   # core must not touch the DOM / import upper layers
 ```
 
 New test clip: analyze it in the app, press **Pose fixture (dev)**, put the `.pose.json` (gzip
@@ -71,7 +76,8 @@ When you change analysis behaviour on purpose: `npm run golden:update`, review t
 
 ## Run
 
-Open `index.html` in Chrome (internet needed the first time to load the model). No install.
+`npm run build:single` and open `dist-single/index.html` in Chrome (internet needed the first time
+to load the model), or `npm run dev`.
 
 1. Drop a video → set the analyze range and the climber's height
 2. **Analyze climb** (Heavy model at 15 fps is a good default; ~1.5× clip length on an M3)
