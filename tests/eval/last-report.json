@@ -1,13 +1,13 @@
 {
-  "date": "2026-11-26T04:54:26.364Z",
+  "date": "2026-11-26T05:19:06.337Z",
   "summary": {
     "clips": 3,
     "labelledAttempts": 4,
     "attemptRecall": 1,
     "attemptPrecision": 1,
-    "startErrMeanS": 1.1,
+    "startErrMeanS": 0.1,
     "endErrMeanS": 0.2,
-    "startWithin0_7s": 0.75,
+    "startWithin0_7s": 1,
     "endWithin0_7s": 1,
     "sendAccuracy": 1,
     "cruxCoverage": 1
@@ -16,8 +16,8 @@
     {
       "clip": "IMG_4016",
       "label": "4.5-32.5s sent",
-      "pred": "4.3-32.5s sent",
-      "startErrS": -0.23,
+      "pred": "4.2-32.5s sent",
+      "startErrS": -0.3,
       "endErrS": 0,
       "iou": 0.99,
       "sentOk": true
@@ -25,10 +25,10 @@
     {
       "clip": "IMG_4051",
       "label": "1.5-33s not sent",
-      "pred": "5.2-33.4s not sent",
-      "startErrS": 3.73,
+      "pred": "1.5-33.4s not sent",
+      "startErrS": 0,
       "endErrS": 0.4,
-      "iou": 0.87,
+      "iou": 0.99,
       "sentOk": true
     },
     {
@@ -43,10 +43,10 @@
     {
       "clip": "IMG_4497",
       "label": "13-51.4s sent",
-      "pred": "13.4-51.6s sent",
-      "startErrS": 0.43,
+      "pred": "13.1-51.6s sent",
+      "startErrS": 0.1,
       "endErrS": 0.17,
-      "iou": 0.98,
+      "iou": 0.99,
       "sentOk": true
     }
   ]

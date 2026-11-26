@@ -1557,29 +1557,17 @@ $('#json').onclick=()=>{
   download(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),`${S.srcName}_climbpose_summary.json`);
 };
 
-// Developer export: pose fixture (raw pose + camera track, rounded) and the v0.2 "golden" results
-// computed from exactly that rounded data. Put both in tests/fixtures/ and run `npm test`.
+// Developer export: pose fixture (raw pose + camera track, rounded). Put it in tests/fixtures/
+// (gzip optional) and run `npm run golden:update` to create its expected results.
 $('#fixture').onclick=()=>{
   const R=S.raw;if(!R||!S.D)return;
-  const r1=v=>isFinite(v)?Math.round(v*10):null,r3=v=>isFinite(v)?Math.round(v*1000):null,rn=(v,d=4)=>isFinite(v)?+(+v).toFixed(d):null;
+  const r1=v=>isFinite(v)?Math.round(v*10):null,r3=v=>isFinite(v)?Math.round(v*1000):null;
   const w=+$('#weight').value>0?+$('#weight').value:null;
   const fx={format:'climbpose.pose/1',clip:S.srcFile||S.srcName,createdWith:'v0.2',settings:{heightCm:+$('#height').value||170,fps:R.fps,model:$('#model').value,wallDeg:+$('#wall').value||0,weightKg:w,cameraCompensation:$('#camcomp').checked,lrFix:$('#lrfix').checked},
     env:envMode(),envScores:S.envScores||null,N:R.N,fps:R.fps,t0:R.t0,t1:R.t1,width:R.vw,height:R.vh,scale:{xy:10,vis:1000},
     x:Array.from(R.X,r1),y:Array.from(R.Y,r1),vis:Array.from(R.V,r3),ox:Array.from(R.OX,r1),oy:Array.from(R.OY,r1)};
-  const dec=(a,sc)=>Float32Array.from(a,q=>q===null?NaN:q/sc);
-  S.raw={N:R.N,fps:R.fps,vw:R.vw,vh:R.vh,t0:R.t0,t1:R.t1,X:dec(fx.x,10),Y:dec(fx.y,10),V:Float32Array.from(fx.vis,q=>q===null?0:q/1000),OX:dec(fx.ox,10),OY:dec(fx.oy,10)};
-  S.reprocess();
-  const D=S.D,M=D.M,N=D.N,ev=a=>{const o=[];for(let i=0;i<N;i+=10)o.push(rn(a[i]));return o;};
-  const metrics={};for(const [k,v] of Object.entries(M))if(typeof v==='number')metrics[k]=rn(v,6);else if(v&&typeof v==='object')metrics[k]=JSON.parse(JSON.stringify(v));
-  const g={env:envMode(),mpp:rn(D.mpp,8),torsoPx:rn(D.torsoPx,4),y0:rn(D.y0,4),metrics,scores:Object.fromEntries(Object.entries(D.sc).map(([k,v])=>[k,rn(v,6)])),
-    holds:D.holds.map(h=>({n:h.n,kind:h.kind,limb:h.limb,x:rn(h.x,3),y:rn(h.y,3),i0:h.i0,i1:h.i1})),
-    attempts:D.attempts.map(a=>({n:a.n,i0:a.i0,i1:a.i1,end:a.end,highFootM:rn(a.highFootM),highComM:rn(a.highComM),sent:a.sent,sentAuto:a.sentAuto,sendI:a.sendI,lastHold:a.lastHold?a.lastHold.n:null,lastHoldM:rn(a.lastHoldM)})),
-    sends:D.sends.map(x=>({att:x.att,i:x.i,how:x.how,hold:x.hold?x.hold.n:null})),
-    cruxes:D.cruxes.map(c=>({att:c.att,i:c.i,hand:c.hand,leg:c.leg,knee:rn(c.knee),elbow:rn(c.elbow),hipPct:rn(c.hipPct),ext:rn(c.ext),comUp:rn(c.comUp),handShare:rn(c.handShare),target:c.target?rn(c.target.distM):null,lastHold:c.lastHold?c.lastHold.n:null,cues:c.cues.map(q=>q.t),tips:c.tips})),
-    series:{comX:ev(D.comX),cys:ev(D.cys),speed:ev(D.speed),handShare:ev(D.handShare),LH:ev(D.load.LH),RF:ev(D.load.RF),shL:ev(D.tq.shL),footH:ev(D.footH),onWall:Array.from(D.onWall).join(''),moving:Array.from(D.moving).join('')}};
   download(new Blob([JSON.stringify(fx)],{type:'application/json'}),`${S.srcName}.pose.json`);
-  download(new Blob([JSON.stringify(g)],{type:'application/json'}),`${S.srcName}.v02.golden.json`);
-  setStatus('Pose fixture + golden results saved — copy both into tests/fixtures/','ok');
+  setStatus('Pose fixture saved — put it in tests/fixtures/ and run npm run golden:update','ok');
 };
 
 document.fonts&&document.fonts.load('700 20px "Space Grotesk"');

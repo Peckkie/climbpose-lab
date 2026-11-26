@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "eval": "vitest run tests/eval --reporter=verbose",
-    "lint:layers": "node tools/check-layers.mjs"
+    "lint:layers": "node tools/check-layers.mjs",
+    "golden:update": "vite-node tools/update-golden.ts"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "0.10.14",
