@@ -99,12 +99,13 @@ climbpose-lab/
 │  │  ├─ cleanup/  signal/  kinematics/  segmentation/
 │  │  ├─ results/  metrics/  crux/  load/
 │  │  └─ pipeline.ts          # runPipeline(raw, settings) → Analysis
-│  ├─ render/                 # M12 layers/, themes.ts, view.ts
-│  ├─ export/                 # M13
+│  ├─ render/                 # M12 layers.ts (LAYERS list), hud, overlays, endcards, style, draw
+│  ├─ export/                 # M13 files.ts, video.ts (timeline segments)
 │  ├─ environment/            # M14
 │  ├─ route/                  # M15
 │  ├─ history/                # M16
-│  ├─ ui/                     # M17 panels/, player.ts
+│  ├─ ui/                     # M17 *-panel.ts, stats, player, tagging, dom
+│  ├─ util/                   # fmt, lerp (ชั้น 0, ไม่มี DOM)
 │  ├─ config.ts               # เกณฑ์ตัวเลขทั้งหมด
 │  └─ types.ts                # data contracts (หัวข้อ 5)
 ├─ tests/

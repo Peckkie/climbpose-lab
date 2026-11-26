@@ -50,8 +50,8 @@
 3. [x] **M04 cleanup, M06 kinematics** → test
 4. [x] **M07 segmentation, M08 results, M09 metrics, M10 crux, M11 load** → `core/pipeline.ts` — ผลตรงกับ v0.2 ทุกคลิป (parity test)
 5. [x] **M01 media, M02 pose, M03 camera** แยกออกจาก `analyze` (`src/media`, `src/pose`, `src/camera`) — แอปเรียก `core/pipeline` แล้ว, วิเคราะห์ IMG_4051 ใหม่ในเบราว์เซอร์ได้ผลตรง golden
-6. [ ] **M12 render** เป็นระบบ layer, **M13 export** ใช้ timeline segment
-7. [~] UI/วาด/export ย้ายมาอยู่ `src/app/app.js` ทั้งก้อน (ยังไม่แยก) · **M14 environment, M15 route, M16 history, M17 ui, M00 app** (store + actions)
+6. [x] **M12 render** เป็นระบบ layer (`LAYERS` ใน `src/render/layers.ts`), **M13 export** ใช้ timeline segment (`buildTimeline`) — ภาพเฟรมสำคัญ 8 แบบตรงกับก่อนแยกทุกพิกเซล
+7. [x] **M14 environment, M15 route, M16 history, M17 ui, M00 app** (store + actions) — ไม่มีไฟล์ `.js` เหลือ, ทุกไฟล์ผ่าน typecheck + กติกาชั้น
 8. [x] build 2 แบบ: `npm run build` (static, `dist/`) และ `npm run build:single` (ไฟล์เดียว, `dist-single/`)
 9. [x] GitHub Actions: typecheck + lint (กติกา import ชั้น) + unit test + build
 

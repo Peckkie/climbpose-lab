@@ -50,10 +50,10 @@ Not in v0.1 yet: history across sessions of the same route (needs storage beyond
 
 ## Development (v0.3 refactor, in progress)
 
-The app is now a Vite + TypeScript project. Analysis runs through the modules in `src/`
-(see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)): `media` → `pose` + `camera` → `core/pipeline`.
-The UI, drawing and export code still sits in `src/app/app.js` (moved from v0.2 unchanged) and is
-being split into `render`, `export`, `route`, `environment`, `history` and `ui` next.
+The app is a Vite + TypeScript project, split into the modules in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): `media` → `pose` + `camera` → `core/pipeline` →
+`render` (a list of drawing layers) / `export` (video from a timeline of segments, data files),
+with `route`, `environment`, `history`, the `ui` panels and the `app` store + actions around them.
 The original single-file app is tag `v0.2`.
 
 ```bash
