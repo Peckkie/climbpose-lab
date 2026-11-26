@@ -11,6 +11,7 @@ export const ENDS: [LimbKey, number[], 'hand' | 'foot'][] = [['LH', [15, 17, 19]
 
 export interface Floor {
   floorY: number; info: FloorInfo; footH: F32; lowFoot: F32;
+  footHL: F32; footHR: F32;   // each foot's height above the floor (m)
   handUp: (i: number) => boolean;
 }
 
@@ -31,9 +32,9 @@ export function estimateFloor(k: Kinematics, cfg = CONFIG.floor): Floor {
   const floorBase = pct(lowFoot.map((v, i) => handUp(i) && atWallBand(i) ? v : NaN), cfg.percentile);
   const floorY = isFinite(floorBase) && (floorAll - floorBase) * mpp < cfg.maxBaseAboveAllM ? floorBase : floorAll;
   const info: FloorInfo = { baseAboveAllM: +((floorAll - floorBase) * mpp).toFixed(2), used: floorY === floorBase ? 'wall base' : 'all frames' };
-  const footH = new Float32Array(N);
-  for (let i = 0; i < N; i++) footH[i] = (floorY - lowFoot[i]) * mpp;
-  return { floorY, info, footH, lowFoot, handUp };
+  const footH = new Float32Array(N), footHL = new Float32Array(N), footHR = new Float32Array(N);
+  for (let i = 0; i < N; i++) { footH[i] = (floorY - lowFoot[i]) * mpp; footHL[i] = (floorY - fL[i]) * mpp; footHR[i] = (floorY - fR[i]) * mpp; }
+  return { floorY, info, footH, lowFoot, footHL, footHR, handUp };
 }
 
 export interface AttemptsOut { attempts: Attempt[]; onWall: Uint8Array; comH: F32; }
@@ -49,6 +50,13 @@ export function detectAttempts(k: Kinematics, fl: Floor, fps: number, cfg = CONF
   for (let i = 0; i < N; i++) onWall[i] = valid[i] && footH[i] > cfg.feetUpM ? 1 : 0;
   cleanRuns(onWall, Math.round(fps * cfg.cleanRunS));
   for (const [a, b] of runs(onWall)) { let s0 = a; while (s0 < b && !handUp(s0)) s0++; for (let i = a; i < s0; i++) onWall[i] = 0; }
+  // Very low start footholds (a few cm) look like the floor in 2D, so the height rule starts late.
+  // Move the start back to the last STEP-UP (a foot rising sharply while a hand is up), as long as
+  // both feet stayed clearly off the floor from that moment on.
+  for (const [a] of runs(onWall)) {
+    const s1 = findStepUp(fl, a, fps, cfg);
+    for (let i = s1; i < a; i++) onWall[i] = 1;
+  }
   const comH = new Float32Array(N);
   for (let i = 0; i < N; i++) comH[i] = isFinite(cys[i]) ? (floorY - cys[i]) * mpp : NaN;
   const pieces: [number, number][] = [];
@@ -73,6 +81,26 @@ export function detectAttempts(k: Kinematics, fl: Floor, fps: number, cfg = CONF
     attempts.push({ n: attempts.length + 1, i0: a, i1: b, dur: (b - a) / fps, highFootM: hiFoot, highComM: hiCom, end });
   }
   return { attempts, onWall, comH };
+}
+
+/** Latest step-up event in the lookback window before `a`, or `a` if none qualifies. */
+function findStepUp(fl: Floor, a: number, fps: number, cfg: typeof CONFIG.attempt): number {
+  const { footH, footHL, footHR, handUp } = fl, N = footH.length;
+  const d = Math.max(1, Math.round(fps * cfg.stepUpWindowS / 2)), lo = Math.max(d, a - Math.round(fps * cfg.stepUpLookbackS));
+  for (let i = a - 1; i >= lo; i--) {
+    if (!(footH[i] > cfg.stepUpOffFloorM)) return a;   // a foot was on the floor here: stop looking back
+    if (!handUp(i) || i + d >= N) continue;
+    // the rising foot must start at floor level — a foot moving between holds is not a step-up
+    const fromFloorL = footHL[i - d] < cfg.feetUpM && footHL[i + d] - footHL[i - d] >= cfg.stepUpRiseM;
+    const fromFloorR = footHR[i - d] < cfg.feetUpM && footHR[i + d] - footHR[i - d] >= cfg.stepUpRiseM;
+    if (fromFloorL || fromFloorR) {
+      // start at the beginning of the rise (first frame where the lower foot is off the floor)
+      let s = i;
+      while (s > i - d && footH[s - 1] > cfg.stepUpOffFloorM) s--;
+      return s;
+    }
+  }
+  return a;
 }
 
 export interface HoldsOut {

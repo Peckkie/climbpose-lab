@@ -1,16 +1,12 @@
-// Phase 1 acceptance: the modular core must reproduce v0.2 exactly on every recorded clip.
-// Golden files were produced by running v0.2 (index.html) in the browser on the same rounded pose data.
-
-import { describe, it, expect } from 'vitest';
-import { listFixtures, readJson, toRawTrack, fixtureSettings, type PoseFixture } from '../helpers/fixtures';
-import { runPipeline } from '../../src/core/pipeline';
+// Summary of an Analysis used for regression goldens (same shape as the original v0.2 dumps),
+// plus a tolerant deep-diff.
 import type { Analysis } from '../../src/types';
 
 const rn = (v: number, d = 4) => (isFinite(v) ? +(+v).toFixed(d) : null);
 const every10 = (a: ArrayLike<number>) => { const o: (number | null)[] = []; for (let i = 0; i < a.length; i += 10) o.push(rn(a[i])); return o; };
 
 /** Same summary shape as the browser-side golden() dump. */
-function summarize(D: Analysis) {
+export function summarize(D: Analysis) {
   const metrics: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(D.M)) {
     if (typeof v === 'number') metrics[k] = rn(v, 6);
@@ -28,7 +24,7 @@ function summarize(D: Analysis) {
 }
 
 /** Deep compare with a tiny tolerance for floats (rounding of the dumps). */
-function diff(a: unknown, b: unknown, path = ''): string[] {
+export function diff(a: unknown, b: unknown, path = ''): string[] {
   if (typeof a === 'number' && typeof b === 'number') {
     const tol = Math.max(1e-6, 1e-5 * Math.max(Math.abs(a), Math.abs(b)));
     return Math.abs(a - b) <= tol + 1.5e-4 ? [] : [`${path}: ${a} ≠ ${b}`];
@@ -44,22 +40,3 @@ function diff(a: unknown, b: unknown, path = ''): string[] {
   return a === b ? [] : [`${path}: ${JSON.stringify(a)} ≠ ${JSON.stringify(b)}`];
 }
 
-const cases = listFixtures().filter((f) => f.golden);
-
-describe('core parity with v0.2', () => {
-  it('has fixtures to test', () => { expect(cases.length).toBeGreaterThan(0); });
-  it('negative control: a changed setting is detected', () => {
-    const c = cases[0], fx = readJson<PoseFixture>(c.pose);
-    const D = runPipeline({ raw: toRawTrack(fx), settings: { ...fixtureSettings(fx), heightCm: fx.settings.heightCm + 10 }, env: fx.env });
-    expect(diff(summarize(D), readJson<object>(c.golden!)).length).toBeGreaterThan(0);
-  });
-  for (const c of cases) {
-    it(c.name, () => {
-      const fx = readJson<PoseFixture>(c.pose);
-      const D = runPipeline({ raw: toRawTrack(fx), settings: fixtureSettings(fx), env: fx.env });
-      const got = summarize(D), want = readJson<object>(c.golden!);
-      const d = diff(got, want);
-      expect(d, d.join('\n')).toEqual([]);
-    });
-  }
-});

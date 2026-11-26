@@ -46,7 +46,7 @@ export function listFixtures(): { name: string; pose: string; golden: string | n
       if (!/\.pose\.json(\.gz)?$/.test(f)) continue;
       const name = f.replace(/\.pose\.json(\.gz)?$/, '');
       if (f.endsWith('.pose.json') && existsSync(join(dir, `${name}.pose.json.gz`))) continue;
-      const g = join(dir, `${name}.v02.golden.json`), l = join(dir, `${name}.labels.json`);
+      const g = join(dir, `${name}.golden.json`), l = join(dir, `${name}.labels.json`);
       out.push({ name, pose: join(dir, f), golden: existsSync(g) ? g : null, labels: existsSync(l) ? l : null });
     }
   }

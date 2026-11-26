@@ -24,6 +24,7 @@ export const CONFIG = {
     feetUpM: 0.12, cleanRunS: 0.5, mergeGapS: 2, mergeHandUpShare: 0.6, minDurS: 1.5,
     dropMs: 1.2, dropLookbackS: 0.8, dropLookaheadS: 0.5,
     topOutMinFootM: 1, topOutWithinM: 0.3, topOutEndS: 0.5,
+    stepUpRiseM: 0.15, stepUpWindowS: 0.6, stepUpLookbackS: 6, stepUpOffFloorM: 0.03, // low start footholds
   },
   holds: {
     handStillMs: 0.16, footStillMs: 0.13, minVis: 0.35, cleanRunS: 0.1, minDurS: 0.4,

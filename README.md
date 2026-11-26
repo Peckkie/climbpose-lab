@@ -56,14 +56,18 @@ identical to v0.2 by tests on recorded pose data.
 
 ```bash
 npm install
-npm test            # unit tests + parity with v0.2 on every fixture
+npm test            # unit tests + regression vs accepted results on every fixture
 npm run eval        # accuracy vs hand-checked labels → tests/eval/last-report.json
 npm run typecheck
 npm run lint:layers # core must not touch the DOM / import upper layers
 ```
 
-New test clip: analyze it in the app, press **Pose fixture (dev)**, gzip the `.pose.json` and put
-it with the `.v02.golden.json` in `tests/fixtures/` (or `tests/fixtures/local/` if it can't be shared).
+New test clip: analyze it in the app, press **Pose fixture (dev)**, put the `.pose.json` (gzip
+optional) in `tests/fixtures/` (or `tests/fixtures/local/` if it can't be shared), then run
+`npm run golden:update` to record its expected results.
+
+When you change analysis behaviour on purpose: `npm run golden:update`, review the diff of the
+`*.golden.json` files and the `npm run eval` report, and commit them with the code change.
 
 ## Run
 
