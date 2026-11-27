@@ -7,6 +7,7 @@ import { envMode } from './environment-panel';
 import { envText } from '../environment';
 import { renderHistory, saveCurrentSession } from './history-panel';
 import { t, type Key } from './i18n';
+import { openGuide, TIP_FOR } from './guide';
 
 export function renderStats(): void {
   const el = $<HTMLElement>('#stats'), D = S.D;
@@ -20,7 +21,7 @@ export function renderStats(): void {
   const wall = M.wallDeg > 0 ? t('m.load.overhang', { d: M.wallDeg }) : M.wallDeg < 0 ? t('m.load.slab') : t('m.load.vertical');
   const issues = D.quality, warns = issues.filter((q) => q.level === 'warn');
   const quality = `<div class="m" style="border-color:${warns.length ? '#FFB020' : 'var(--line)'}"><div class="k"><span>${t('q.title')}</span><span>${warns.length ? '⚠ ' + warns.length : '✓'}</span></div>
-    <p>${warns.length ? '' : `<span style="color:#3DDC97">●</span> ${t('q.good')}${issues.length ? '<br>' : ''}`}${issues.map((q) => `<span style="color:${q.level === 'warn' ? '#FFB020' : 'var(--mute)'}">●</span> ${t(`q.${q.id}` as Key, { v: q.value, v2: q.value2 ?? '' })}`).join('<br>')}</p></div>`;
+    <p>${warns.length ? '' : `<span style="color:#3DDC97">●</span> ${t('q.good')}${issues.length ? '<br>' : ''}`}${issues.map((q) => `<span style="color:${q.level === 'warn' ? '#FFB020' : 'var(--mute)'}">●</span> ${t(`q.${q.id}` as Key, { v: q.value, v2: q.value2 ?? '' })}${TIP_FOR[q.id] ? ` <a href="#" data-guide="${TIP_FOR[q.id]}" style="color:var(--accent)">${t('q.fix')}</a>` : ''}`).join('<br>')}</p></div>`;
   el.innerHTML = quality + `<div class="score"><div class="big">${M.flow}</div><div><b>${t('report.flow')}</b><br><small>${t('report.tracked', { p: Math.round(M.coverage * 100) })}</small></div></div>
   <div class="metrics">
   ${card(t('m.fluency'), f(M.ldlj, 2), sc.fluency, t('m.fluency.d'))}
@@ -40,6 +41,7 @@ export function renderStats(): void {
   <div class="note">${t('crux.note')}</div>`;
   el.insertAdjacentHTML('beforeend', `<h3 style="margin-top:18px"><span>⟲</span> ${t('hist.title')}</h3><button class="btn small" id="saveSess">${t('hist.save')}</button><div id="hist"></div>`);
   $<HTMLButtonElement>('#saveSess').onclick = saveCurrentSession; renderHistory();
+  el.querySelectorAll<HTMLAnchorElement>('[data-guide]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); openGuide(a.dataset.guide); }));
   el.querySelectorAll<HTMLButtonElement>('[data-crux]').forEach((b) => (b.onclick = () => gotoCrux(+b.dataset.crux!)));
   el.querySelectorAll<HTMLSelectElement>('[data-att]').forEach((sel) => (sel.onchange = () => {
     const n = sel.dataset.att!;
