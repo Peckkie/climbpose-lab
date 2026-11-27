@@ -8,6 +8,7 @@ import { envText } from '../environment';
 import { renderHistory, saveCurrentSession } from './history-panel';
 import { t, type Key } from './i18n';
 import { openGuide, TIP_FOR } from './guide';
+import { exportCruxSequence } from './export-panel';
 
 export function renderStats(): void {
   const el = $<HTMLElement>('#stats'), D = S.D;
@@ -36,12 +37,13 @@ export function renderStats(): void {
   ${card(t('m.straight'), f(M.straightness, 2), null, t('m.straight.d'))}
   </div>
   <h3 style="margin-top:18px"><span>✕</span> ${t('crux.title')}</h3>
-  ${D.cruxes.length ? D.cruxes.map((c, k) => `<div class="m"><div class="k"><span>${t('crux.att', { n: c.att, t: fmt(D.t0 + c.i / D.fps) })}</span><button class="btn small" data-crux="${k}">${t('crux.go')}</button></div>
+  ${D.cruxes.length ? D.cruxes.map((c, k) => `<div class="m"><div class="k"><span>${t('crux.att', { n: c.att, t: fmt(D.t0 + c.i / D.fps) })}</span><span style="display:flex;gap:6px"><button class="btn small" data-seq="${k}">${t('crux.seq')}</button><button class="btn small" data-crux="${k}">${t('crux.go')}</button></span></div>
     <p>${c.cues.map((q) => `<span style="color:${q.bad ? 'var(--bad)' : '#3DDC97'}">●</span> ${q.t}`).join('<br>')}</p>${c.tips.length ? `<p style="color:var(--text)">${c.tips.map((tip) => `<b style="color:var(--accent)">${t('crux.try')}</b> ${tip}`).join('<br>')}</p>` : ''}</div>`).join('') : `<div class="note">${t('crux.none')}</div>`}
   <div class="note">${t('crux.note')}</div>`;
   el.insertAdjacentHTML('beforeend', `<h3 style="margin-top:18px"><span>⟲</span> ${t('hist.title')}</h3><button class="btn small" id="saveSess">${t('hist.save')}</button><div id="hist"></div>`);
   $<HTMLButtonElement>('#saveSess').onclick = saveCurrentSession; renderHistory();
   el.querySelectorAll<HTMLAnchorElement>('[data-guide]').forEach((a) => (a.onclick = (e) => { e.preventDefault(); openGuide(a.dataset.guide); }));
+  el.querySelectorAll<HTMLButtonElement>('[data-seq]').forEach((b) => (b.onclick = () => exportCruxSequence(+b.dataset.seq!)));
   el.querySelectorAll<HTMLButtonElement>('[data-crux]').forEach((b) => (b.onclick = () => gotoCrux(+b.dataset.crux!)));
   el.querySelectorAll<HTMLSelectElement>('[data-att]').forEach((sel) => (sel.onchange = () => {
     const n = sel.dataset.att!;

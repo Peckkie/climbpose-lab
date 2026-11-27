@@ -45,7 +45,7 @@ export const TH: Partial<Record<keyof typeof EN, string>> = {
   'm.load.assumed': ' (สมมติ — ใส่น้ำหนักตัวเพื่อได้ค่า กก./Nm จริง)', 'm.load.overhang': 'ผนังเอียงเข้า {d}°', 'm.load.slab': 'slab', 'm.load.vertical': 'ผนังตั้งตรง', 'm.load.pctOf': '{p}% ของเวลาบนผนัง',
   'm.move': 'ขยับ / พัก', 'm.move.v': '{m}% / {r}% · {n} ครั้ง', 'm.move.d': 'เวลาที่ขยับเทียบกับหยุดนิ่ง (อ่านรูท พัก ลงชอล์ก)',
   'm.straight': 'ความตรงของเส้นทาง', 'm.straight.d': 'ระยะกระจัด ÷ ระยะทางที่ CoM เคลื่อนที่ (1 = ตรงเป๊ะ)',
-  'crux.title': 'CRUX BREAKDOWN', 'crux.att': 'Attempt {n} · {t}', 'crux.go': 'ไปที่ crux ▸', 'crux.try': 'ลอง →',
+  'crux.title': 'CRUX BREAKDOWN', 'crux.att': 'Attempt {n} · {t}', 'crux.go': 'ไปที่ crux ▸', 'crux.seq': 'ภาพลำดับท่า ⬇', 'st.seqMaking': 'กำลังทำภาพลำดับท่าก่อนหลุด…', 'st.seqSaved': 'บันทึกภาพลำดับท่าแล้ว ({name}) — 1080×1350 พร้อมโพสต์', 'crux.try': 'ลอง →',
   'crux.none': 'ไม่พบ attempt ที่ไม่ส่ง — crux breakdown ต้องมี attempt ที่ไม่ถึง top',
   'crux.note': 'Crux = เฟรมที่มือเอื้อมสูงสุดก่อนหลุด เกณฑ์ (เข่า &lt;155°, สะโพก &lt;38%, ศอก &lt;150°, เอื้อม &lt;88%) ยังเป็นค่าเริ่มต้น คำอธิบายและคำแนะนำยังเป็นภาษาอังกฤษ',
   'q.title': 'คุณภาพคลิป', 'q.good': 'คลิปเหมาะกับการวิเคราะห์ — เห็นนักปีนชัด กล้องนิ่ง',
