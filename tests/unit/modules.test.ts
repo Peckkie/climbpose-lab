@@ -62,3 +62,12 @@ describe('clip quality', () => {
   it('a steady, clear gym clip only gets the body-weight note', () => { expect(issues('IMG_4034')).toEqual(['weight']); });
   it('a hand-held clip that pans and zooms gets camera / scale / edge warnings', () => { expect(issues('IMG_4497')).toEqual(['camera', 'edge', 'scale', 'weight']); });
 });
+
+describe('crux sequence frames', () => {
+  it('6 frames over 2.5 s ending at the crux, never before the attempt starts', async () => {
+    const { sequenceFrames } = await import('../../src/export/sequence');
+    expect(sequenceFrames(300, 0, 30)).toEqual([225, 240, 255, 270, 285, 300]);
+    const short = sequenceFrames(40, 20, 30);
+    expect(short[0]).toBe(20); expect(short[5]).toBe(40);
+  });
+});

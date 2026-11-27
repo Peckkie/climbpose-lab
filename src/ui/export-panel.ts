@@ -1,6 +1,9 @@
 // M17 ui — EXPORT card: video with overlays, per-frame CSV, summary JSON, pose fixture (dev).
 import { download, framesCsv, poseFixture, summaryJson } from '../export/files';
 import { recordRealtime, renderOffline } from '../export/video';
+import { renderCruxSequence } from '../export/sequence';
+import { routeLabel } from '../route';
+import { fmt } from '../util';
 import { seekTo } from '../media';
 import { APP_VERSION } from '../app/version';
 import { S, R } from '../app/store';
@@ -35,6 +38,24 @@ async function exportVideo(): Promise<void> {
     setStatus(t('st.exported', { how: how === 'rendered' ? t('st.howRendered') : t('st.howRecorded'), mb: (blob.size / 1048576).toFixed(0) }), 'ok');
   } catch (e) { console.error(e); setStatus(t('st.exportFail', { msg: (e as Error).message }), 'err'); }
   S.busy = false; S.exporting = false; lockUI(false); await seekTo(video, S.D.t0);
+}
+
+/** One image of the frames before a fall (crux k of the report). */
+export async function exportCruxSequence(k: number): Promise<void> {
+  const D = S.D, c = D?.cruxes[k];
+  if (!D || !c || S.busy || S.exporting) return;
+  S.busy = true; lockUI(true); setStatus(t('st.seqMaking'), 'busy');
+  try {
+    const route = routeLabel(routeInfo()), bad = c.cues.filter((q) => q.bad).map((q) => q.t);
+    const blob = await renderCruxSequence(R, c, {
+      title: 'CRUX SEQUENCE',
+      subtitle: [route || S.srcFile || S.srcName, `ATTEMPT ${c.att}`, `OFF AT ${fmt(D.t0 + c.i / D.fps)}`].join(' · '),
+      footer: [...bad, ...c.tips.map((tip) => 'TRY → ' + tip)],
+    });
+    const name = `${S.srcName}_crux${c.att}_sequence.png`;
+    save(blob, name); setStatus(t('st.seqSaved', { name }), 'ok');
+  } catch (e) { console.error(e); setStatus(t('st.exportFail', { msg: (e as Error).message }), 'err'); }
+  S.busy = false; lockUI(false);
 }
 
 export function initExportPanel(): void {
