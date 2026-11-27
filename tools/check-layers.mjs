@@ -10,7 +10,7 @@ const LAYER = [
   [/^(types|config)\.ts$|^util\//, 0], [/^core\/signal\//, 0],
   [/^core\/(cleanup|kinematics)\//, 1],
   [/^core\/(segmentation|load|metrics)\//, 2],
-  [/^core\/(results|crux)\/|^core\/pipeline\.ts$/, 3],
+  [/^core\/(results|crux|quality)\/|^core\/pipeline\.ts$/, 3],
   [/^(media|pose|camera|environment|route|history|labeling)\//, 4],
   [/^(render|export)\//, 5],
   [/^(ui|app)\/|^main\.ts$/, 6],

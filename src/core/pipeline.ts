@@ -13,6 +13,7 @@ import { computeMotionMetrics, flowScore } from './metrics';
 import { resolveResults } from './results';
 import { findCruxes, addLoadCues } from './crux';
 import { solveLoad, loadSummary } from './load';
+import { assessQuality } from './quality';
 
 export const NO_EDITS: Edits = { add: [], remove: [], attemptResult: {} };
 
@@ -71,7 +72,7 @@ export function runPipeline({ raw, settings, env, edits = NO_EDITS, cache = {} }
   M.rejectedFrames = cache.clean.rejected;
   M.floor = fl.info;
   M.cameraTravelPx = Math.round(Math.hypot(k.oX[N - 1], k.oY[N - 1]));
-  return {
+  const D: Analysis = {
     env, N, fps, vw, vh, t0: raw.t0, t1: raw.t1,
     X: k.X, Y: k.Y, XW: k.XW, YW: k.YW, V: k.V, oX: k.oX, oY: k.oY, cA: k.cA, cB: k.cB,
     mpp: k.mpp, torsoPx: k.torsoPx,
@@ -80,6 +81,8 @@ export function runPipeline({ raw, settings, env, edits = NO_EDITS, cache = {} }
     onWall, comH, footH: fl.footH, y0: mm.y0,
     holds, attempts, sends, cruxes,
     load: L.load, tq: L.tq, handShare: L.handShare,
-    M, sc, camX, camY,
+    M, sc, camX, camY, quality: [],
   };
+  D.quality = assessQuality(raw, D, settings);
+  return D;
 }

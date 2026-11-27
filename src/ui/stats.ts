@@ -6,7 +6,7 @@ import { $ } from './dom';
 import { envMode } from './environment-panel';
 import { envText } from '../environment';
 import { renderHistory, saveCurrentSession } from './history-panel';
-import { t } from './i18n';
+import { t, type Key } from './i18n';
 
 export function renderStats(): void {
   const el = $<HTMLElement>('#stats'), D = S.D;
@@ -18,7 +18,10 @@ export function renderStats(): void {
     <select data-att="${a.n}" style="margin-left:6px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;font-size:11px"><option value="auto"${a.override === 'auto' ? ' selected' : ''}>${t('att.auto')}${a.sentAuto ? t('att.autoSent') : t('att.autoNot')}</option><option value="sent"${a.override === 'sent' ? ' selected' : ''}>${t('att.sent')}</option><option value="fail"${a.override === 'fail' ? ' selected' : ''}>${t('att.fail')}</option></select>`).join('<br>')
     : t('m.attempts.none');
   const wall = M.wallDeg > 0 ? t('m.load.overhang', { d: M.wallDeg }) : M.wallDeg < 0 ? t('m.load.slab') : t('m.load.vertical');
-  el.innerHTML = `<div class="score"><div class="big">${M.flow}</div><div><b>${t('report.flow')}</b><br><small>${t('report.tracked', { p: Math.round(M.coverage * 100) })}</small></div></div>
+  const issues = D.quality, warns = issues.filter((q) => q.level === 'warn');
+  const quality = `<div class="m" style="border-color:${warns.length ? '#FFB020' : 'var(--line)'}"><div class="k"><span>${t('q.title')}</span><span>${warns.length ? '⚠ ' + warns.length : '✓'}</span></div>
+    <p>${warns.length ? '' : `<span style="color:#3DDC97">●</span> ${t('q.good')}${issues.length ? '<br>' : ''}`}${issues.map((q) => `<span style="color:${q.level === 'warn' ? '#FFB020' : 'var(--mute)'}">●</span> ${t(`q.${q.id}` as Key, { v: q.value, v2: q.value2 ?? '' })}`).join('<br>')}</p></div>`;
+  el.innerHTML = quality + `<div class="score"><div class="big">${M.flow}</div><div><b>${t('report.flow')}</b><br><small>${t('report.tracked', { p: Math.round(M.coverage * 100) })}</small></div></div>
   <div class="metrics">
   ${card(t('m.fluency'), f(M.ldlj, 2), sc.fluency, t('m.fluency.d'))}
   ${card(t('m.path'), f(M.gie, 2), sc.path, t('m.path.d'))}

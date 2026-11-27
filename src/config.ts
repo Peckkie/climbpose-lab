@@ -52,6 +52,10 @@ export const CONFIG = {
     ldljLo: -13, ldljSpan: 8, gieLo: 0.4, gieSpan: 1.6, straightArmFull: 0.7, footHandFull: 1.1,
     straightArmDeg: 150, ldljMinSegS: 0.3,
   },
+  quality: {
+    minFound: 0.9, minTorsoPx: 110, maxTorsoSpread: 0.35, maxZoom: 1.25, maxTravel: 0.45,
+    edge: 0.01, maxEdgeShare: 0.08, maxRejected: 0.02,
+  },
   camera: {
     followSigmaS: 0.6,
     trackMedianS: 0.2,        // similarity camera track: median filter (drops single-frame mis-fits) …
