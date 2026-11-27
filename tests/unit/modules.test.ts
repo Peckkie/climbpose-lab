@@ -105,3 +105,35 @@ describe('compare attempts', () => {
     expect(pickGhost([list[0]], list[0])).toBeNull();
   });
 });
+
+describe('saved sessions', () => {
+  const fx = listFixtures().find((f) => f.name === 'IMG_4497')!;
+  const f = readJson<PoseFixture>(fx.pose), raw = toRawTrack(f), settings = fixtureSettings(f);
+  const D = runPipeline({ raw, settings, env: f.env });
+  const route = { environment: 'gym' as const, gym: 'Test gym', gym_map: null, system: 'V' as const, grade: 'V3', tag: 'Blue', tagHex: null, name: '' };
+  it('raw pose survives encode → decode (fixture precision)', async () => {
+    const { encodeRaw, decodeRaw } = await import('../../src/history/raw');
+    const back = decodeRaw(JSON.parse(JSON.stringify(encodeRaw(raw))));
+    expect(Array.from(back.X.slice(0, 500))).toEqual(Array.from(raw.X.slice(0, 500)));
+    expect(Array.from(back.CA!.slice(0, 50))).toEqual(Array.from(raw.CA!.slice(0, 50)));
+  });
+  it('records sends and the attempt of the first send', async () => {
+    const { sessionSummary } = await import('../../src/history');
+    const s = sessionSummary(D, route, 'IMG_4497');
+    expect(s.sends).toBe(1); expect(s.attemptsToSend).toBe(2);
+  });
+  it('saves, finds the same clip, re-analyses and round-trips a session file', async () => {
+    const h = await import('../../src/history');
+    const saved = h.makeSaved(D, raw, { route, srcName: 'IMG_4497', settings, env: f.env, edits: { add: [], remove: [], attemptResult: {} }, clip: { file: 'IMG_4497.MOV', duration: 51.7 }, app: 'test' });
+    await h.saveSession(saved);
+    expect((await h.findSavedForClip('IMG_4497.MOV', 51.72))!.id).toBe(saved.id);
+    expect(await h.findSavedForClip('IMG_4497.MOV', 40)).toBeNull();
+    const again = h.reanalyse({ ...saved, flow: -1 }, 'test2');
+    expect(again.flow).toBe(D.M.flow); expect(again.date).toBe(saved.date); expect(again.analysedWith).toBe('test2');
+    const back = h.parseSessionFile(h.sessionFile(saved));
+    expect(back.id).toBe(saved.id); expect(back.raw!.N).toBe(raw.N);
+    expect(() => h.parseSessionFile('{"format":"x"}')).toThrow();
+    await h.deleteSession(saved.id);
+    expect(await h.findSavedForClip('IMG_4497.MOV', 51.7)).toBeNull();
+  });
+});

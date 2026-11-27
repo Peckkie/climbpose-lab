@@ -164,6 +164,8 @@ dialog#about{max-width:560px;width:calc(100% - 32px);max-height:calc(100vh - 48p
       <div class="row"><label data-i18n="src.fps">Analyzed frames / sec</label><select id="fps"><option>15</option><option selected>30</option></select></div>
       <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="camcomp" checked> <span data-i18n="src.camcomp">Compensate camera pan / handheld (lock to wall)</span></label><label><input type="checkbox" id="lrfix" checked> <span data-i18n="src.lrfix">Fix left/right swaps (temporal)</span></label></div>
       <button class="btn primary" id="analyze" disabled data-i18n="src.analyze">Analyze climb</button>
+      <button class="btn" id="useSaved" style="display:none"></button>
+      <input id="histFile" type="file" accept=".json,application/json" hidden>
       <div class="bar" id="bar"><i></i></div>
     </section>
     <section data-sec="route">

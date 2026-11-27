@@ -10,6 +10,7 @@ import { renderStats } from '../ui/stats';
 import { updatePhotoInfo } from '../ui/route-panel';
 import { applyEnv, envMode, runEnvDetection } from '../ui/environment-panel';
 import { onClipLoaded, refreshLabels } from '../ui/label-panel';
+import { offerSaved } from '../ui/history-panel';
 import { S, R } from './store';
 import { t } from '../ui/i18n';
 import { showSection } from '../ui/sheet';
@@ -52,6 +53,7 @@ export function loadSrc(src: string, name: string, cors: boolean): void {
     $('#t0').value = '0'; $('#t1').value = Math.min(video.duration, 60).toFixed(1); $('#t1').max = video.duration.toFixed(1);
     setStatus(t('st.videoReady', { w: video.videoWidth, h: video.videoHeight, d: video.duration.toFixed(1) }), 'ok');
     S.envDetected = null; applyEnv(); runEnvDetection();
+    void offerSaved();
   };
   video.onerror = () => setStatus(t('st.videoErr'), 'err');
 }
@@ -63,6 +65,7 @@ const analyzeBtn = () => $<HTMLButtonElement>('#analyze');
 export async function analyze(): Promise<void> {
   if (S.busy) { if (abort) { abort.abort(); setStatus(t('st.cancelling'), 'busy'); } return; }
   S.busy = true; lockUI(true);
+  $<HTMLElement>('#useSaved').style.display = 'none';
   abort = new AbortController();
   const btn = analyzeBtn(); btn.disabled = false; btn.textContent = t('src.cancel');
   const bar = $<HTMLElement>('#bar');
