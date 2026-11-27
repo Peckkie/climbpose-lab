@@ -12,6 +12,7 @@ import { applyEnv, envMode, runEnvDetection } from '../ui/environment-panel';
 import { onClipLoaded, refreshLabels } from '../ui/label-panel';
 import { S, R } from './store';
 import { t } from '../ui/i18n';
+import { showSection } from '../ui/sheet';
 
 const RESULT_BUTTONS = ['#rec', '#csv', '#json', '#fixture'];
 
@@ -87,7 +88,7 @@ export async function analyze(): Promise<void> {
     S.livePose = null; S.raw = raw; S.cache = {};
     const N = raw.N;
     if (found < N * 0.2) setStatus(t('st.fewFound', { p: Math.round(100 * found / N) }), 'err');
-    process();
+    process(); showSection('report');
     const nWarn = S.D ? S.D.quality.filter((q) => q.level === 'warn').length : 0;
     if (found >= N * 0.2) setStatus(nWarn ? t('st.doneWarn', { p: Math.round(100 * found / N), n: nWarn }) : t('st.done', { p: Math.round(100 * found / N) }), 'ok');
     await seekTo(video, raw.t0);
