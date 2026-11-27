@@ -4,7 +4,8 @@
 // moves the wording into an editable rule table.
 
 import { CONFIG } from '../../config';
-import type { Attempt, Crux, Cue, F32, Hold } from '../../types';
+import type { Attempt, Crux, Cue, F32, Hold, TipKey } from '../../types';
+import { sayCue, sayTip, type CueId, type Params, type TipId } from '../../coaching';
 import { median } from '../signal';
 import type { Kinematics } from '../kinematics';
 
@@ -45,22 +46,28 @@ export function findCruxes(k: Kinematics, attempts: Attempt[], holds: Hold[], fp
       if (!target || dm < target.distM) target = { x: h.x, y: h.y, distM: dm };
     }
     const cues: Cue[] = [];
-    const LR = leg ? 'R' : 'L', oKnee = ang[3 - leg][i], oTxt = isFinite(oKnee) ? ` · other leg ${Math.round(oKnee)}°` : '';
-    if (isFinite(knee)) cues.push(knee < cfg.kneeBentDeg ? { bad: 1, t: `Push leg (${LR}) bent ${Math.round(knee)}°${oTxt}` } : { bad: 0, t: `Push leg (${LR}) straight ${Math.round(knee)}°${oTxt}` });
-    if (isFinite(hipPct)) cues.push(hipPct < cfg.hipsLowPct ? { bad: 1, t: `Hips low — ${Math.round(hipPct * 100)}% of foot→hand` } : { bad: 0, t: `Hips up — ${Math.round(hipPct * 100)}% of foot→hand` });
-    if (isFinite(elbow)) cues.push(elbow < cfg.elbowBentDeg ? { bad: 1, t: `Reach arm bent ${Math.round(elbow)}°` } : { bad: 0, t: `Reach arm long ${Math.round(elbow)}°` });
-    if (isFinite(ext)) cues.push(ext < cfg.reachLowPct ? { bad: 1, t: `Body at ${Math.round(ext * 100)}% of full reach` } : { bad: 0, t: `Body at ${Math.round(ext * 100)}% of full reach` });
-    if (target) cues.push({ bad: 1, t: `Next hold ~${Math.round(target.distM * 100)} cm away` });
-    if (isFinite(comUp)) cues.push({ bad: 0, t: comUp > cfg.dynamicMs ? `Moving up ${comUp.toFixed(2)} m/s (dynamic)` : `Static at max reach (${comUp.toFixed(2)} m/s)` });
-    const tips: string[] = [], gapCm = target ? Math.round(target.distM * 100) : null;
-    if (isFinite(knee) && knee < cfg.kneeBentDeg) tips.push('Straighten the push leg fully before you let go — drive through the foot.');
-    if (isFinite(hipPct) && hipPct < cfg.hipsLowPct) tips.push('Get the hips up first: step the feet higher or rock over before the move.');
-    if (isFinite(elbow) && elbow < cfg.elbowBentDeg) tips.push('Reach from a straight arm — turn the hip into the wall to add length.');
-    if (isFinite(ext) && ext < cfg.reachLowPct && tips.length < 2) tips.push('Use your full length: flag a leg, rise on the toes, twist the hip in.');
-    if (gapCm && !tips.length) tips.push(isFinite(comUp) && comUp > cfg.dynamicMs ? `Moving but still ${gapCm} cm short — generate more: sink lower, then drive with the legs.` : `Static reach maxed out, ${gapCm} cm short — go dynamic (deadpoint) or find a higher foot first.`);
-    else if (gapCm && tips.length) tips.push(`Fixing this should help close the ~${gapCm} cm gap.`);
-    if (a.lastHold) cues.unshift({ bad: 0, t: `High point: hand hold #${a.lastHold.n}${isFinite(a.lastHoldM!) ? ` · ${a.lastHoldM!.toFixed(1)} m up` : ''}` });
-    cruxes.push({ lastHold: a.lastHold, lastHoldM: a.lastHoldM, att: a.n, i, hand, leg, knee, elbow, otherElbow, hipPct, ext, comUp, target, cues, tips: tips.slice(0, 3), end: a.end });
+    const cue = (id: CueId, bad: 0 | 1, p: Params) => cues.push({ id, bad, p, t: sayCue(id, p) });
+    const LR = leg ? 'R' : 'L', oKnee = ang[3 - leg][i], o = isFinite(oKnee) ? Math.round(oKnee) : undefined;
+    if (isFinite(knee)) cue(knee < cfg.kneeBentDeg ? 'legBent' : 'legStraight', knee < cfg.kneeBentDeg ? 1 : 0, { lr: LR, deg: Math.round(knee), o });
+    if (isFinite(hipPct)) cue(hipPct < cfg.hipsLowPct ? 'hipsLow' : 'hipsUp', hipPct < cfg.hipsLowPct ? 1 : 0, { pct: Math.round(hipPct * 100) });
+    if (isFinite(elbow)) cue(elbow < cfg.elbowBentDeg ? 'armBent' : 'armLong', elbow < cfg.elbowBentDeg ? 1 : 0, { deg: Math.round(elbow) });
+    if (isFinite(ext)) cue('reach', ext < cfg.reachLowPct ? 1 : 0, { pct: Math.round(ext * 100) });
+    if (target) cue('nextHold', 1, { cm: Math.round(target.distM * 100) });
+    if (isFinite(comUp)) cue(comUp > cfg.dynamicMs ? 'dynamic' : 'static', 0, { ms: comUp.toFixed(2) });
+    const tipKeys: TipKey[] = [], gapCm = target ? Math.round(target.distM * 100) : null;
+    const tip = (id: TipId, p: Params = {}) => tipKeys.push({ id, p });
+    if (isFinite(knee) && knee < cfg.kneeBentDeg) tip('straightenLeg');
+    if (isFinite(hipPct) && hipPct < cfg.hipsLowPct) tip('hipsUp');
+    if (isFinite(elbow) && elbow < cfg.elbowBentDeg) tip('straightArm');
+    if (isFinite(ext) && ext < cfg.reachLowPct && tipKeys.length < 2) tip('fullLength');
+    if (gapCm && !tipKeys.length) tip(isFinite(comUp) && comUp > cfg.dynamicMs ? 'dynamicMore' : 'goDynamic', { cm: gapCm });
+    else if (gapCm && tipKeys.length) tip('closeGap', { cm: gapCm });
+    if (a.lastHold) {
+      const p: Params = { n: a.lastHold.n, m: isFinite(a.lastHoldM!) ? a.lastHoldM!.toFixed(1) : undefined };
+      cues.unshift({ id: 'highPoint', bad: 0, p, t: sayCue('highPoint', p) });
+    }
+    const tk = tipKeys.slice(0, 3);
+    cruxes.push({ lastHold: a.lastHold, lastHoldM: a.lastHoldM, att: a.n, i, hand, leg, knee, elbow, otherElbow, hipPct, ext, comUp, target, cues, tips: tk.map((k) => sayTip(k.id, k.p)), tipKeys: tk, end: a.end });
   }
   return cruxes;
 }
@@ -71,8 +78,9 @@ export function addLoadCues(cruxes: Crux[], handShare: F32, cfg = CONFIG.crux): 
     const hsC = handShare[c.i];
     c.handShare = hsC;
     if (isFinite(hsC)) {
-      c.cues.splice(c.cues.length - 1, 0, hsC > cfg.handsHeavyShare ? { bad: 1, t: `Hands carrying ${Math.round(hsC * 100)}% of body weight` } : { bad: 0, t: `Feet carrying ${Math.round((1 - hsC) * 100)}% of body weight` });
-      if (hsC > cfg.handsHeavyShare && c.tips.length < 3) c.tips.push('Weight is on the arms — set the feet so they take more load before the reach.');
+      const heavy = hsC > cfg.handsHeavyShare, id: CueId = heavy ? 'handsHeavy' : 'feetCarry', p: Params = { pct: Math.round((heavy ? hsC : 1 - hsC) * 100) };
+      c.cues.splice(c.cues.length - 1, 0, { id, bad: heavy ? 1 : 0, p, t: sayCue(id, p) });
+      if (heavy && c.tips.length < 3) { c.tipKeys.push({ id: 'weightOnArms', p: {} }); c.tips.push(sayTip('weightOnArms', {})); }
     }
   }
 }

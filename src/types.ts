@@ -1,4 +1,5 @@
 // Data contracts shared across modules (see docs/ARCHITECTURE.md §5).
+import type { CueId, Params, TipId } from './coaching';
 // Field names of `Analysis` deliberately match v0.2's `S.D` so the renderer can be ported without renames.
 
 export type F32 = Float32Array;
@@ -45,14 +46,16 @@ export interface Attempt {
 
 export interface Send { att: number; i: number; hold: Hold | null | undefined; how: string; }
 
-export interface Cue { bad: 0 | 1; t: string; }
+/** A crux observation: rule id + numbers (src/coaching.ts), and its English text in t. */
+export interface Cue { bad: 0 | 1; t: string; id: CueId; p: Params; }
+export interface TipKey { id: TipId; p: Params; }
 
 export interface Crux {
   lastHold: Hold | null | undefined; lastHoldM: number | undefined;
   att: number; i: number; hand: 0 | 1; leg: 0 | 1;
   knee: number; elbow: number; otherElbow: number; hipPct: number; ext: number; comUp: number;
   target: { x: number; y: number; distM: number } | null;
-  cues: Cue[]; tips: string[]; end: AttemptEnd; handShare?: number;
+  cues: Cue[]; tips: string[]; tipKeys: TipKey[]; end: AttemptEnd; handShare?: number;  // tips = English text of tipKeys
 }
 
 export interface FloorInfo { baseAboveAllM: number; used: 'wall base' | 'all frames'; }

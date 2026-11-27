@@ -50,7 +50,7 @@ export const EN = {
   'm.straight': 'Path straightness', 'm.straight.d': 'Net displacement ÷ distance travelled by the CoM (1 = perfectly straight)',
   'crux.title': 'CRUX BREAKDOWN', 'crux.att': 'Attempt {n} · {t}', 'crux.go': 'Go to crux ▸', 'crux.seq': 'Sequence image ⬇', 'st.seqMaking': 'Making the crux sequence image…', 'st.seqSaved': 'Crux sequence saved ({name}) — 1080×1350, ready to post', 'crux.try': 'TRY →',
   'crux.none': 'No failed attempt found — crux breakdown needs an attempt that did not top out.',
-  'crux.note': 'Crux = the frame where the hand reached highest just before coming off. Thresholds (knee &lt;155°, hips &lt;38%, elbow &lt;150°, reach &lt;88%) are a first guess. Cues and tips are in English for now.',
+  'crux.note': 'Crux = the frame where the hand reached highest just before coming off. Thresholds (knee &lt;155°, hips &lt;38%, elbow &lt;150°, reach &lt;88%) are a first guess — wording and rules: src/coaching.ts.',
   // clip quality
   'q.title': 'CLIP QUALITY', 'q.good': 'Good clip for analysis — climber clear, camera steady.',
   'q.found': 'Climber found in only {v}% of frames — results have gaps.',

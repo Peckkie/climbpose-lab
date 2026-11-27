@@ -6,7 +6,8 @@ import { $ } from './dom';
 import { envMode } from './environment-panel';
 import { envText } from '../environment';
 import { renderHistory, saveCurrentSession } from './history-panel';
-import { t, type Key } from './i18n';
+import { t, getLang, type Key } from './i18n';
+import { sayCue, sayTip } from '../coaching';
 import { openGuide, TIP_FOR } from './guide';
 import { exportCruxSequence } from './export-panel';
 
@@ -38,7 +39,7 @@ export function renderStats(): void {
   </div>
   <h3 style="margin-top:18px"><span>✕</span> ${t('crux.title')}</h3>
   ${D.cruxes.length ? D.cruxes.map((c, k) => `<div class="m"><div class="k"><span>${t('crux.att', { n: c.att, t: fmt(D.t0 + c.i / D.fps) })}</span><span style="display:flex;gap:6px"><button class="btn small" data-seq="${k}">${t('crux.seq')}</button><button class="btn small" data-crux="${k}">${t('crux.go')}</button></span></div>
-    <p>${c.cues.map((q) => `<span style="color:${q.bad ? 'var(--bad)' : '#3DDC97'}">●</span> ${q.t}`).join('<br>')}</p>${c.tips.length ? `<p style="color:var(--text)">${c.tips.map((tip) => `<b style="color:var(--accent)">${t('crux.try')}</b> ${tip}`).join('<br>')}</p>` : ''}</div>`).join('') : `<div class="note">${t('crux.none')}</div>`}
+    <p>${c.cues.map((q) => `<span style="color:${q.bad ? 'var(--bad)' : '#3DDC97'}">●</span> ${sayCue(q.id, q.p, getLang())}`).join('<br>')}</p>${c.tipKeys.length ? `<p style="color:var(--text)">${c.tipKeys.map((k) => `<b style="color:var(--accent)">${t('crux.try')}</b> ${sayTip(k.id, k.p, getLang())}`).join('<br>')}</p>` : ''}</div>`).join('') : `<div class="note">${t('crux.none')}</div>`}
   <div class="note">${t('crux.note')}</div>`;
   el.insertAdjacentHTML('beforeend', `<h3 style="margin-top:18px"><span>⟲</span> ${t('hist.title')}</h3><button class="btn small" id="saveSess">${t('hist.save')}</button><div id="hist"></div>`);
   $<HTMLButtonElement>('#saveSess').onclick = saveCurrentSession; renderHistory();

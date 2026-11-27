@@ -28,7 +28,7 @@ export function summaryJson(o: SummaryInput): object {
       attempt: c.att, t: +(D.t0 + c.i / D.fps).toFixed(2), reach_hand: c.hand ? 'R' : 'L', push_leg: c.leg ? 'R' : 'L',
       knee_deg: Math.round(c.knee), elbow_deg: Math.round(c.elbow), hip_pct: Math.round(c.hipPct * 100), reach_pct: Math.round(c.ext * 100),
       com_up_ms: +(+c.comUp).toFixed(2), gap_to_next_hold_cm: c.target ? Math.round(c.target.distM * 100) : null,
-      cues: c.cues.map((q) => q.t), tips: c.tips, hand_load_share_pct: isFinite(c.handShare as number) ? Math.round((c.handShare as number) * 100) : null,
+      cues: c.cues.map((q) => q.t), tips: c.tips, cue_ids: c.cues.map((q) => q.id), tip_ids: c.tipKeys.map((k) => k.id), hand_load_share_pct: isFinite(c.handShare as number) ? Math.round((c.handShare as number) * 100) : null,
     })),
     attempts: D.attempts.map((a) => ({
       sent: a.sent, result_source: a.override, last_hold: a.lastHold ? { n: a.lastHold.n, height_m: +(+(a.lastHoldM as number)).toFixed(2) } : null,
