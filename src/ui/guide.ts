@@ -1,4 +1,4 @@
-// M17 ui — filming guide: how to record a climb so the analysis works well. Opened from the header,
+// M17 ui — filming guide and the About & privacy box. Filming guide: how to record a climb so the analysis works well. Opened from the header,
 // the empty screen, and the quality warnings (each warning jumps to the tip that fixes it).
 import type { QualityIssue } from '../types';
 import { $ } from './dom';
@@ -22,4 +22,9 @@ export function initGuide(): void {
   $<HTMLButtonElement>('#guideEmpty').onclick = () => openGuide();
   $<HTMLButtonElement>('#guideClose').onclick = () => d.close();
   d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); // tap outside the box
+  // About & privacy
+  const a = $<HTMLDialogElement>('#about');
+  $<HTMLButtonElement>('#aboutOpen').onclick = () => a.showModal();
+  $<HTMLButtonElement>('#aboutClose').onclick = () => a.close();
+  a.addEventListener('click', (e) => { if (e.target === a) a.close(); });
 }
