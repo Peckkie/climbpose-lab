@@ -77,6 +77,34 @@ details{margin-top:8px} summary{cursor:pointer;color:var(--mute);font-size:12.5p
 details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
 @media (max-width:600px){.player{flex-wrap:wrap}.player input[type=range]{flex-basis:100%;order:5}.player .time{min-width:0;margin-left:auto}.row input[type=number],.row select{width:auto;max-width:150px}}
 @media (max-width:900px){main{grid-template-columns:1fr}aside{border-left:0;max-height:none}#cv{max-height:70vh}}
+.sheet-tabs{display:none}
+/* phone: video + player stay on top, controls in a bottom sheet with one tab per section */
+@media (max-width:760px){
+  header{padding:10px 14px;gap:10px;flex-wrap:wrap}
+  .tag{display:none}
+  #status{order:5;flex-basis:100%;margin-left:0;font-size:12px}
+  main{display:block;min-height:0}
+  .stage{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 10px 10px;gap:8px}
+  .canvasWrap{min-height:180px;border-radius:10px}
+  #cv{max-height:46vh}
+  .player{gap:8px}
+  .player button{width:44px;height:44px}
+  body{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  aside{position:fixed;left:0;right:0;bottom:0;z-index:20;max-height:none;overflow:hidden;border-left:0;border-top:1px solid var(--line);border-radius:16px 16px 0 0;box-shadow:0 -10px 30px #000a;padding-bottom:env(safe-area-inset-bottom)}
+  .sheet-tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 10px 8px;scrollbar-width:none}
+  .sheet-tabs::-webkit-scrollbar{display:none}
+  .sheet-tabs button{flex:0 0 auto;padding:9px 13px;border-radius:99px;border:1px solid var(--line);background:var(--panel2);color:var(--mute);font-size:12.5px;font-family:var(--mono);letter-spacing:.06em;cursor:pointer}
+  .sheet-tabs button.on{color:#0A0B0D;background:var(--accent);border-color:var(--accent)}
+  .sheet-body{max-height:0;overflow-y:auto;transition:max-height .2s ease;overscroll-behavior:contain}
+  aside.open .sheet-body{max-height:41vh;border-top:1px solid var(--line)}
+  body.sheet-open #cv{max-height:28vh}
+  body.sheet-open .canvasWrap{min-height:0}
+  body.sheet-open .player .time{display:none}
+  aside section{display:none;border-bottom:0}
+  aside section.cur{display:block}
+  section h3{display:none}
+  .row input[type=number],.row select{width:auto;max-width:170px}
+}
 </style>
 </head>
 <body>
@@ -105,8 +133,10 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
       <div class="time" id="time">00:00.0 / 00:00.0</div>
     </div>
   </div>
-  <aside>
-    <section>
+  <aside id="sheet">
+    <nav class="sheet-tabs" id="sheetTabs"></nav>
+    <div class="sheet-body">
+    <section data-sec="src">
       <h3><span>01</span> <span data-i18n="src.title">SOURCE</span></h3>
       <div class="drop" id="drop" data-i18n-html="src.drop">📹 Click or drag a video file here<br><small>mp4 · mov · webm</small></div>
       <input id="file" type="file" accept="video/*" hidden>
@@ -121,7 +151,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
       <button class="btn primary" id="analyze" disabled data-i18n="src.analyze">Analyze climb</button>
       <div class="bar" id="bar"><i></i></div>
     </section>
-    <section>
+    <section data-sec="route">
       <h3><span>02</span> <span data-i18n="route.title">ROUTE</span></h3>
       <div class="row"><label data-i18n="route.where">Where</label><select id="env"><option value="auto" data-i18n="env.auto">Auto-detect</option><option value="gym" data-i18n="env.gym">Gym wall</option><option value="rock" data-i18n="env.rock">Real rock (outdoor)</option></select></div>
       <div id="envInfo" class="note" style="margin-top:4px"></div>
@@ -142,7 +172,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
       <div id="photoInfo" class="note">Auto: the route map uses the frame where the attempt starts. Best results: take the route photo from the same spot as the camera, camera on a tripod.</div>
       <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="tagMode"> <span data-i18n="route.tagMode">✎ Tag holds on the video (click = hand, shift-click = foot, click a hold to remove)</span></label></div>
     </section>
-    <section>
+    <section data-sec="look">
       <h3><span>03</span> <span data-i18n="look.title">LOOK</span></h3>
       <div class="chips" id="styles">
         <button class="chip on" data-style="neon">NEON</button>
@@ -162,11 +192,11 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
       <div class="row"><label data-i18n="look.frame">Frame</label><select id="frame"><option value="orig" data-i18n="frame.orig">Original</option><option value="reel" data-i18n="frame.reel">9:16 Reel / TikTok</option></select></div>
       <div class="row"><label data-i18n="look.zoom">Follow cam (zoom)</label><select id="zoom"><option value="0" data-i18n="zoom.off">Off</option><option value="1">1.0×</option><option value="1.4">1.4×</option><option value="1.8">1.8×</option><option value="2.4">2.4×</option></select></div>
     </section>
-    <section id="statsSec">
+    <section id="statsSec" data-sec="report">
       <h3><span>04</span> <span data-i18n="report.title">SEND REPORT</span></h3>
       <div id="stats"><div class="note" data-i18n="report.empty">Analyze a video and the efficiency metrics will appear here</div></div>
     </section>
-    <section>
+    <section data-sec="exp">
       <h3><span>05</span> <span data-i18n="exp.title">EXPORT</span></h3>
       <button class="btn primary" id="rec" disabled data-i18n="exp.video">⏺ Export video with overlays</button>
       <div class="grid2">
@@ -190,7 +220,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
         <p data-i18n="exp.howNote">All values are estimates from single-camera 2D video. They work best for comparing the same climber on the same problem over time. The Flow score is this app's own formula and has not been validated against research data.</p>
       </details>
     </section>
-    <section>
+    <section data-sec="lbl">
       <h3><span>06</span> <span data-i18n="lbl.title">LABEL · GROUND TRUTH</span></h3>
       <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="lblMode"> <span data-i18n="lbl.mode">Labelling mode — mark what really happened, to measure the app's accuracy</span></label></div>
       <div id="lblBody" style="display:none">
@@ -211,6 +241,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
         <button class="btn small" id="lblClear" style="margin-top:8px;width:100%" data-i18n="lbl.clear">Clear labels for this clip</button>
       </div>
     </section>
+    </div>
   </aside>
 </main>
 <video id="vid" playsinline muted preload="auto" style="display:none"></video>
