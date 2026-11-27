@@ -9,6 +9,7 @@ import { initExportPanel } from '../ui/export-panel';
 import { initLabelPanel, refreshLabels } from '../ui/label-panel';
 import { initLangSwitch, onLangChange, t } from '../ui/i18n';
 import { initSheet } from '../ui/sheet';
+import { initGuide } from '../ui/guide';
 import { renderStats } from '../ui/stats';
 import { envLabels } from '../ui/environment-panel';
 import { fillGyms, updatePhotoInfo } from '../ui/route-panel';
@@ -33,6 +34,7 @@ function initSource(): void {
 export function start(): void {
   initLangSwitch();
   initSheet();
+  initGuide();
   setStatus(t('status.start'));
   initRoutePanel();
   initEnvironmentPanel();

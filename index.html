@@ -78,6 +78,15 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
 @media (max-width:600px){.player{flex-wrap:wrap}.player input[type=range]{flex-basis:100%;order:5}.player .time{min-width:0;margin-left:auto}.row input[type=number],.row select{width:auto;max-width:150px}}
 @media (max-width:900px){main{grid-template-columns:1fr}aside{border-left:0;max-height:none}#cv{max-height:70vh}}
 .sheet-tabs{display:none}
+.guide-btn{margin-left:8px}
+dialog#guide{max-width:560px;width:calc(100% - 32px);max-height:calc(100vh - 48px);overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+dialog#guide::backdrop{background:#000a}
+.g-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--disp);font-size:17px}
+.tip{display:flex;gap:12px;padding:12px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);transition:border-color .3s}
+.tip .ico{font-size:22px;line-height:1.2}
+.tip b{font-size:14px}.tip p{margin:4px 0 0;font-size:12.5px;color:var(--mute);line-height:1.5}
+.tip.hl{border-color:var(--accent)}
+@media (max-width:760px){.guide-btn{margin-left:auto;padding:6px 10px}}
 /* phone: video + player stay on top, controls in a bottom sheet with one tab per section */
 @media (max-width:760px){
   header{padding:10px 14px;gap:10px;flex-wrap:wrap}
@@ -112,6 +121,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
   <div class="logo">CLIMB<b>/</b>POSE</div>
   <span class="tag">movement lab · v0.3-dev</span>
   <div id="status"><i></i><span>Choose a climbing video to start</span></div>
+  <button class="btn small guide-btn" id="guideOpen" data-i18n="g.open">📷 Filming guide</button>
   <div class="lang"><button data-lang="th">TH</button><button data-lang="en">EN</button></div>
 </header>
 <main>
@@ -122,6 +132,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
         <h2>CLIMB<b>/</b>POSE</h2>
         <div data-i18n="empty.drop">Drop a climbing video here, or pick one from the panel</div>
         <div style="font-size:12px" data-i18n="empty.kinds">Outdoor rock · gym wall · boulder · lead — handheld footage is fine</div>
+        <button class="btn small" id="guideEmpty" style="pointer-events:auto;margin-top:6px" data-i18n="g.emptyBtn">How to film for best results</button>
       </div>
     </div>
     <div class="player">
@@ -244,6 +255,18 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
     </div>
   </aside>
 </main>
+<dialog id="guide">
+  <div class="g-head"><b data-i18n="g.title">How to film a climb for analysis</b><button class="btn small" id="guideClose" data-i18n="g.close">Close</button></div>
+  <p class="note" data-i18n="g.intro"></p>
+      <div class="tip" id="tip-steady"><span class="ico">📱</span><div><b data-i18n="g.steady.t"></b><p data-i18n="g.steady.d"></p></div></div>
+      <div class="tip" id="tip-frame"><span class="ico">🧗</span><div><b data-i18n="g.frame.t"></b><p data-i18n="g.frame.d"></p></div></div>
+      <div class="tip" id="tip-size"><span class="ico">🔍</span><div><b data-i18n="g.size.t"></b><p data-i18n="g.size.d"></p></div></div>
+      <div class="tip" id="tip-angle"><span class="ico">📐</span><div><b data-i18n="g.angle.t"></b><p data-i18n="g.angle.d"></p></div></div>
+      <div class="tip" id="tip-light"><span class="ico">💡</span><div><b data-i18n="g.light.t"></b><p data-i18n="g.light.d"></p></div></div>
+      <div class="tip" id="tip-margin"><span class="ico">⏱</span><div><b data-i18n="g.margin.t"></b><p data-i18n="g.margin.d"></p></div></div>
+      <div class="tip" id="tip-photo"><span class="ico">🖼</span><div><b data-i18n="g.photo.t"></b><p data-i18n="g.photo.d"></p></div></div>
+      <div class="tip" id="tip-alone"><span class="ico">👤</span><div><b data-i18n="g.alone.t"></b><p data-i18n="g.alone.d"></p></div></div>
+</dialog>
 <video id="vid" playsinline muted preload="auto" style="display:none"></video>
 <script type="module" src="/src/main.ts"></script>
 </body>
