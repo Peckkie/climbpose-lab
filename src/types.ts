@@ -72,6 +72,9 @@ export interface Metrics {
   rejectedFrames: number; floor: FloorInfo; cameraTravelPx: number;
 }
 
+/** A reason to trust the analysis less (codes; the UI words them). */
+export interface QualityIssue { id: 'found' | 'small' | 'scale' | 'camera' | 'edge' | 'rejected' | 'weight'; level: 'warn' | 'info'; value: number; value2?: number; }
+
 export interface Scores { fluency: number; path: number; arms: number; feet: number; }
 
 export type LoadTrack = Record<LimbKey, F32>;
@@ -89,4 +92,5 @@ export interface Analysis {
   holds: Hold[]; attempts: Attempt[]; sends: Send[]; cruxes: Crux[];
   load: LoadTrack; tq: TorqueTrack; handShare: F32;
   M: Metrics; sc: Scores; camX: F32; camY: F32;
+  quality: QualityIssue[];
 }

@@ -51,6 +51,16 @@ export const EN = {
   'crux.title': 'CRUX BREAKDOWN', 'crux.att': 'Attempt {n} · {t}', 'crux.go': 'Go to crux ▸', 'crux.try': 'TRY →',
   'crux.none': 'No failed attempt found — crux breakdown needs an attempt that did not top out.',
   'crux.note': 'Crux = the frame where the hand reached highest just before coming off. Thresholds (knee &lt;155°, hips &lt;38%, elbow &lt;150°, reach &lt;88%) are a first guess. Cues and tips are in English for now.',
+  // clip quality
+  'q.title': 'CLIP QUALITY', 'q.good': 'Good clip for analysis — climber clear, camera steady.',
+  'q.found': 'Climber found in only {v}% of frames — results have gaps.',
+  'q.small': 'Climber is small in the video (trunk ~{v} px) — the skeleton is less accurate. Film closer or at a higher resolution.',
+  'q.scale': 'Distance to the camera changes a lot (body size varies {v}%) — heights and speeds in metres are less exact.',
+  'q.camera': 'Camera moved or zoomed a lot (zoom ×{v}, travel {v2}% of the frame) — hold positions are less exact. A tripod works best.',
+  'q.edge': 'Hands or feet were at the edge of the frame {v}% of the time on the wall — those positions are guessed. Keep the whole climber in view.',
+  'q.rejected': '{v}% of frames had a false detection (dropped) — check the skeleton follows the climber.',
+  'q.weight': 'Body weight not entered — loads use {v} kg.',
+  'st.doneWarn': 'Done · climber found in {p}% of frames · {n} quality warning(s) — see the report',
   // history
   'hist.title': 'HISTORY', 'hist.save': 'Save this session', 'hist.saved': 'Session saved to history (this browser)',
   'hist.empty': 'No saved sessions yet. Fill in the route (gym, grade, tag) and press Save to track progress on it.',

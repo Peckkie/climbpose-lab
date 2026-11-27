@@ -53,3 +53,12 @@ describe('M13 export timeline', () => {
     expect(tl.reduce((n, s) => n + segmentFrames(s), 0)).toBe(Math.round((D.t1 - D.t0) * OUT_FPS) + Math.round(4.5 * OUT_FPS) + Math.round(3.5 * OUT_FPS));
   });
 });
+
+describe('clip quality', () => {
+  const issues = (name: string) => {
+    const fx = listFixtures().find((f) => f.name === name)!, f = readJson<PoseFixture>(fx.pose);
+    return runPipeline({ raw: toRawTrack(f), settings: fixtureSettings(f), env: f.env }).quality.map((q) => q.id).sort();
+  };
+  it('a steady, clear gym clip only gets the body-weight note', () => { expect(issues('IMG_4034')).toEqual(['weight']); });
+  it('a hand-held clip that pans and zooms gets camera / scale / edge warnings', () => { expect(issues('IMG_4497')).toEqual(['camera', 'edge', 'scale', 'weight']); });
+});
