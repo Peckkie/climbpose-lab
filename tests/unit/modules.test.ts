@@ -86,3 +86,22 @@ describe('coaching rule table', () => {
     }
   });
 });
+
+describe('compare attempts', () => {
+  it('aligns by height reached, not by time', async () => {
+    const { alignByHeight } = await import('../../src/core/compare');
+    // attempt a: frames 0–4 climbs 0.1 → 0.5; attempt b: frames 5–14 climbs slower 0.1 → 1.0
+    const h = Float32Array.from([0.1, 0.2, 0.3, 0.4, 0.5, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 1.0]);
+    expect(Array.from(alignByHeight(h, { i0: 0, i1: 5 }, { i0: 5, i1: 15 }))).toEqual([5, 7, 9, 11, 13]);
+    // b never gets as high as a's top → -1
+    expect(Array.from(alignByHeight(h, { i0: 5, i1: 15 }, { i0: 0, i1: 5 })).slice(-2)).toEqual([4, -1]);
+  });
+  it('picks a sent attempt, else the highest', async () => {
+    const { pickGhost } = await import('../../src/core/compare');
+    const A = (n: number, sent: boolean, highComM: number) => ({ n, sent, highComM, i0: 0, i1: 1, dur: 1, highFootM: 0, end: 'fall / jump-off' as const });
+    const list = [A(1, false, 1.2), A(2, false, 1.6), A(3, true, 1.4)];
+    expect(pickGhost(list, list[0])!.n).toBe(3);
+    expect(pickGhost(list, list[2])!.n).toBe(2);
+    expect(pickGhost([list[0]], list[0])).toBeNull();
+  });
+});

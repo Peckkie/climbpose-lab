@@ -22,7 +22,7 @@ export interface AppState extends RealtimeState {
 export const S: AppState = {
   raw: null, cache: {}, D: null, holdEdits: { add: [], remove: [] }, attemptResult: {},
   srcName: 'clip', envDetected: null, envScores: null, dragging: false,
-  style: 'neon', show: { skel: 1, com: 1, limbs: 1, holds: 1, angles: 1, hud: 1, crux: 1, load: 1 }, frame: 'orig', zoom: 0,
+  style: 'neon', show: { skel: 1, com: 1, limbs: 1, holds: 1, angles: 1, hud: 1, crux: 1, load: 1, ghost: 0 }, frame: 'orig', zoom: 0,
   busy: false, exporting: false, livePose: null, onClipEnd: null,
   endCard: 0, routeProg: null, endCardAlpha: null, cruxFreeze: null, sendFreeze: null, routeBg: null, routePhoto: null, labelMarks: null,
 };
