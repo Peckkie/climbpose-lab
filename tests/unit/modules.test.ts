@@ -137,3 +137,21 @@ describe('saved sessions', () => {
     expect(await h.findSavedForClip('IMG_4497.MOV', 51.7)).toBeNull();
   });
 });
+
+describe('progress series', () => {
+  const S = (date: string, grade: string, name: string, flow: number, extra: object = {}) => ({
+    id: date + name, date, src: 'clip', key: `gym|g|${grade.toLowerCase()}||${name}`, flow, scores: {}, attempts: 2, tops: 0,
+    highFootM: 1, handShare: 50, cruxGapCm: 20, cruxes: 1,
+    route: { environment: 'gym' as const, gym: 'G', gym_map: null, system: 'V' as const, grade, tag: '', tagHex: null, name }, ...extra,
+  });
+  it('groups by route (most sessions first) and by grade across 2+ routes; sorts by date', async () => {
+    const { progressGroups, progressSeries } = await import('../../src/history/progress');
+    const list = [S('2026-11-20', 'V3', 'arete', 60), S('2026-11-10', 'V3', 'arete', 55), S('2026-11-25', 'V3', 'roof', 70, { sends: 1, attemptsToSend: 1 }), S('2026-11-01', '', '', 40)];
+    const g = progressGroups(list);
+    expect(g.map((x) => [x.kind, x.label, x.count])).toEqual([['route', 'V3 · arete · G', 2], ['route', 'V3 · roof · G', 1], ['grade', 'V3', 3]]);
+    expect(progressSeries(list, g[0].id).map((p) => p.flow)).toEqual([55, 60]);
+    const grade = progressSeries(list, g[2].id);
+    expect(grade.map((p) => p.date.slice(5))).toEqual(['11-10', '11-20', '11-25']);
+    expect(grade[2]).toMatchObject({ sent: true, flash: true });
+  });
+});

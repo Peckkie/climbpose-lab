@@ -92,6 +92,7 @@ export const EN = {
   'hist.import': 'Import .climbpose.json', 'hist.imported': 'Imported session {name}', 'hist.importErr': 'Could not import: {msg}',
   'hist.reanalyse': 'Re-analyse saved sessions', 'hist.reanalysed': 'Re-analysed {n} saved session(s) with the current version',
   'hist.useSaved': '⚡ Use saved analysis ({date}) — no need to analyse again', 'hist.usedSaved': 'Loaded the saved analysis from {date} — press play',
+  'prog.open': '📈 Progress', 'prog.title': 'Progress over time', 'prog.flow': 'Flow (higher = smoother)', 'prog.hands': '% weight on hands (lower = more on feet)', 'prog.gap': 'Crux gap, cm (lower = closer to the move)', 'prog.none': 'No sessions with route info yet. Fill in grade, tag or name and press Save to start tracking a route.', 'prog.one': 'Only one session so far — save another one on this route to see a trend.', 'prog.grade': 'All {g} routes ({n})', 'prog.sent': 'sent ✓', 'prog.notSent': 'not sent', 'prog.keySession': 'session', 'prog.keySent': 'sent (diamond)', 'prog.table': 'Show as table', 'prog.date': 'Date', 'prog.handsShort': 'On hands', 'prog.gapShort': 'Crux gap', 'prog.attempts': 'Attempts', 'prog.result': 'Result',
   'hist.flash': 'FLASH ✓', 'hist.sentIn': 'sent on attempt {n} ✓', 'hist.deleteConfirm': 'Delete this saved session? This cannot be undone.',
   // 05 export
   'exp.title': 'EXPORT', 'exp.video': '⏺ Export video with overlays', 'exp.csv': 'Per-frame CSV', 'exp.json': 'Summary JSON', 'exp.fixture': 'Pose fixture (dev)',

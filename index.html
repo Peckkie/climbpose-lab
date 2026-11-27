@@ -80,16 +80,24 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
 .sheet-tabs{display:none}
 .guide-btn{margin-left:8px}
 dialog#guide{max-width:560px;width:calc(100% - 32px);max-height:calc(100vh - 48px);overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
-dialog#guide::backdrop,dialog#about::backdrop{background:#000a}
+dialog#guide::backdrop,dialog#about::backdrop,dialog#progress::backdrop{background:#000a}
 dialog#about{max-width:560px;width:calc(100% - 32px);max-height:calc(100vh - 48px);overflow:auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
 .about-body{font-size:13px;line-height:1.6;color:var(--mute)}.about-body h4{color:var(--text);font-size:14px;margin:14px 0 4px}.about-body b{color:var(--text)}.about-body a{color:var(--accent)}.about-body li{margin:4px 0}
-.about-btn{margin-left:6px}
+.about-btn{margin-left:6px}.prog-btn{margin-left:6px}
+dialog#progress{max-width:600px;width:calc(100% - 32px);max-height:calc(100vh - 48px);overflow:auto;overflow-x:hidden;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+#progGroup{width:100%;margin:12px 0 4px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+#progBody{position:relative}
+.prog-key{display:flex;gap:16px;font-size:12px;color:var(--mute);margin:6px 0}.prog-key span{display:flex;align-items:center;gap:5px}
+.prog-chart{margin-top:12px}.prog-h{font-size:12.5px;color:var(--mute);margin-bottom:2px}.prog-chart svg{width:100%;height:auto;display:block;overflow:visible}
+.prog-chart rect:focus{outline:none}.prog-chart rect:focus-visible{stroke:var(--mute);stroke-width:1}
+.prog-tip{position:absolute;display:none;pointer-events:none;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;line-height:1.5;white-space:nowrap;z-index:2}
+.prog-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}.prog-table th,.prog-table td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}.prog-table th{color:var(--mute);font-weight:500}
 .g-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--disp);font-size:17px}
 .tip{display:flex;gap:12px;padding:12px;margin-top:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);transition:border-color .3s}
 .tip .ico{font-size:22px;line-height:1.2}
 .tip b{font-size:14px}.tip p{margin:4px 0 0;font-size:12.5px;color:var(--mute);line-height:1.5}
 .tip.hl{border-color:var(--accent)}
-@media (max-width:760px){.guide-btn{margin-left:auto;padding:6px 10px}.btn.small.about-btn{padding:6px 10px;font-size:0}.about-btn::before{content:"ⓘ";font-size:14px}}
+@media (max-width:760px){.guide-btn{margin-left:auto;padding:6px 10px}.btn.small.about-btn{padding:6px 10px;font-size:0}.about-btn::before{content:"ⓘ";font-size:14px}.btn.small.prog-btn{padding:6px 10px;font-size:0}.prog-btn::before{content:"📈";font-size:14px}}
 /* phone: video + player stay on top, controls in a bottom sheet with one tab per section */
 @media (max-width:760px){
   header{padding:10px 14px;gap:10px;flex-wrap:wrap}
@@ -125,6 +133,7 @@ dialog#about{max-width:560px;width:calc(100% - 32px);max-height:calc(100vh - 48p
   <span class="tag">movement lab · v0.3-dev</span>
   <div id="status"><i></i><span>Choose a climbing video to start</span></div>
   <button class="btn small guide-btn" id="guideOpen" data-i18n="g.open">📷 Filming guide</button>
+  <button class="btn small prog-btn" id="progOpen" data-i18n="prog.open" style="display:none">📈 Progress</button>
   <button class="btn small about-btn" id="aboutOpen" data-i18n="a.open">About & privacy</button>
   <div class="lang"><button data-lang="th">TH</button><button data-lang="en">EN</button></div>
 </header>
@@ -273,6 +282,11 @@ dialog#about{max-width:560px;width:calc(100% - 32px);max-height:calc(100vh - 48p
       <div class="tip" id="tip-margin"><span class="ico">⏱</span><div><b data-i18n="g.margin.t"></b><p data-i18n="g.margin.d"></p></div></div>
       <div class="tip" id="tip-photo"><span class="ico">🖼</span><div><b data-i18n="g.photo.t"></b><p data-i18n="g.photo.d"></p></div></div>
       <div class="tip" id="tip-alone"><span class="ico">👤</span><div><b data-i18n="g.alone.t"></b><p data-i18n="g.alone.d"></p></div></div>
+</dialog>
+<dialog id="progress">
+  <div class="g-head"><b data-i18n="prog.title">Progress over time</b><button class="btn small" id="progClose" data-i18n="g.close">Close</button></div>
+  <select id="progGroup" aria-label="Route"></select>
+  <div id="progBody"></div>
 </dialog>
 <dialog id="about">
   <div class="g-head"><b data-i18n="a.title">About ClimbPose</b><button class="btn small" id="aboutClose" data-i18n="g.close">Close</button></div>
