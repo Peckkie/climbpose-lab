@@ -13,6 +13,8 @@ import { $, setStatus, video } from './dom';
 import { routeInfo } from './route-panel';
 import { envMode, applyEnv } from './environment-panel';
 import { t } from './i18n';
+import { openProgress, refreshProgressButton } from './progress';
+import { progressGroups } from '../history/progress';
 
 export async function saveCurrentSession(): Promise<void> {
   if (!S.D || !S.raw) return;
@@ -27,10 +29,11 @@ export async function saveCurrentSession(): Promise<void> {
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
 export async function renderHistory(): Promise<void> {
+  void refreshProgressButton();
   const box = document.getElementById('hist'); if (!box) return;
   const list = await listSessions(), ri = routeInfo(), key = routeKey(ri);
   const hasRoute = key.replace(/\|/g, '').length > 0 && key !== routeKey({ environment: ri.environment, gym: ri.gym });
-  const tools = `<div class="row" style="margin-top:6px;flex-wrap:wrap"><button class="btn small" id="histImport">${t('hist.import')}</button>${list.some((x) => x.raw) ? `<button class="btn small" id="histRe">${t('hist.reanalyse')}</button>` : ''}</div>`;
+  const tools = `<div class="row" style="margin-top:6px;flex-wrap:wrap">${progressGroups(list).length ? `<button class="btn small" id="histProg">${t('prog.open')}</button>` : ''}<button class="btn small" id="histImport">${t('hist.import')}</button>${list.some((x) => x.raw) ? `<button class="btn small" id="histRe">${t('hist.reanalyse')}</button>` : ''}</div>`;
   if (!list.length) { box.innerHTML = `<div class="note">${t('hist.empty')}</div>` + tools; wireTools(box); return; }
   const same = hasRoute ? list.filter((x) => x.key === key) : [], others = list.filter((x) => !same.includes(x)).slice(0, 6);
   const row = (x: SavedSession, prev: SavedSession | null | undefined) => {
@@ -62,6 +65,8 @@ export async function renderHistory(): Promise<void> {
 }
 
 function wireTools(box: HTMLElement): void {
+  const prog = box.querySelector<HTMLButtonElement>('#histProg');
+  if (prog) prog.onclick = () => openProgress(routeKey(routeInfo()));
   const imp = box.querySelector<HTMLButtonElement>('#histImport');
   if (imp) imp.onclick = () => $('#histFile').click();
   const re = box.querySelector<HTMLButtonElement>('#histRe');
