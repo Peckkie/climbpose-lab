@@ -2,6 +2,7 @@
 import type { Analysis, Env, RawTrack } from '../types';
 import type { RouteInfo } from '../route';
 import type { EnvScores } from '../environment';
+import { encodeRaw } from '../history/raw';
 
 /** Save a blob and keep a link to it in `area` (the downloads list). */
 export function download(blob: Blob, name: string, area?: HTMLElement | null): void {
@@ -58,12 +59,5 @@ export interface FixtureInput {
 }
 /** Pose fixture (raw pose + camera track, rounded) for tests/fixtures/ — see tests/helpers/fixtures.ts. */
 export function poseFixture(o: FixtureInput): object {
-  const R = o.raw;
-  const r1 = (v: number) => isFinite(v) ? Math.round(v * 10) : null, r3 = (v: number) => isFinite(v) ? Math.round(v * 1000) : null;
-  return {
-    format: 'climbpose.pose/1', clip: o.clip, createdWith: o.createdWith, settings: o.settings,
-    env: o.env, envScores: o.envScores, N: R.N, fps: R.fps, t0: R.t0, t1: R.t1, width: R.vw, height: R.vh, scale: { xy: 10, vis: 1000 },
-    x: Array.from(R.X, r1), y: Array.from(R.Y, r1), vis: Array.from(R.V, r3), ox: Array.from(R.OX, r1), oy: Array.from(R.OY, r1),
-    ...(R.CA && R.CB ? { camera: 'similarity/1', ca: Array.from(R.CA, (v) => Math.round(v * 1e5)), cb: Array.from(R.CB, (v) => Math.round(v * 1e5)) } : {}),
-  };
+  return { format: 'climbpose.pose/1', clip: o.clip, createdWith: o.createdWith, settings: o.settings, env: o.env, envScores: o.envScores, ...encodeRaw(o.raw) };
 }

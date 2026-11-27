@@ -88,6 +88,11 @@ export const EN = {
   'hist.empty': 'No saved sessions yet. Fill in the route (gym, grade, tag) and press Save to track progress on it.',
   'hist.thisRoute': 'This route · {n} session(s) (Δ = Flow vs previous)', 'hist.other': 'Other routes', 'hist.recent': 'Recent sessions',
   'hist.row': '{n} attempt(s)', 'hist.tops': ' · {n} top', 'hist.hands': ' · {p}% on hands', 'hist.gap': ' · crux gap {c} cm', 'hist.delete': 'delete',
+  'hist.export': 'export', 'hist.exported': 'Session file saved ({name}) — open it with Import on another device',
+  'hist.import': 'Import .climbpose.json', 'hist.imported': 'Imported session {name}', 'hist.importErr': 'Could not import: {msg}',
+  'hist.reanalyse': 'Re-analyse saved sessions', 'hist.reanalysed': 'Re-analysed {n} saved session(s) with the current version',
+  'hist.useSaved': '⚡ Use saved analysis ({date}) — no need to analyse again', 'hist.usedSaved': 'Loaded the saved analysis from {date} — press play',
+  'hist.flash': 'FLASH ✓', 'hist.sentIn': 'sent on attempt {n} ✓', 'hist.deleteConfirm': 'Delete this saved session? This cannot be undone.',
   // 05 export
   'exp.title': 'EXPORT', 'exp.video': '⏺ Export video with overlays', 'exp.csv': 'Per-frame CSV', 'exp.json': 'Summary JSON', 'exp.fixture': 'Pose fixture (dev)',
   'exp.fixtureTitle': 'For developers: raw pose data for the automated tests', 'exp.how': 'How it is computed',

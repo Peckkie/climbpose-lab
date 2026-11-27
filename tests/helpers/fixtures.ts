@@ -5,6 +5,7 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
 import { join } from 'node:path';
 import type { Env, RawTrack, Settings } from '../../src/types';
+import { decodeRaw } from '../../src/history/raw';
 
 export const FIXTURE_DIR = join(__dirname, '..', 'fixtures');
 export const LOCAL_DIR = join(FIXTURE_DIR, 'local'); // not committed (other people's clips)
@@ -23,16 +24,7 @@ export function readJson<T>(path: string): T {
   return JSON.parse((path.endsWith('.gz') ? gunzipSync(buf) : buf).toString('utf8')) as T;
 }
 
-export function toRawTrack(f: PoseFixture): RawTrack {
-  const s = f.scale.xy, sv = f.scale.vis;
-  const dec = (a: (number | null)[]) => Float32Array.from(a, (q) => (q === null ? NaN : q / s));
-  return {
-    N: f.N, fps: f.fps, t0: f.t0, t1: f.t1, vw: f.width, vh: f.height,
-    X: dec(f.x), Y: dec(f.y), V: Float32Array.from(f.vis, (q) => (q === null ? 0 : q / sv)),
-    OX: dec(f.ox), OY: dec(f.oy),
-    ...(f.ca && f.cb ? { CA: Float32Array.from(f.ca, (q) => (q === null ? 1 : q / 1e5)), CB: Float32Array.from(f.cb, (q) => (q === null ? 0 : q / 1e5)) } : {}),
-  };
-}
+export const toRawTrack = (f: PoseFixture): RawTrack => decodeRaw(f);
 
 export function fixtureSettings(f: PoseFixture): Settings {
   return { heightCm: f.settings.heightCm, weightKg: f.settings.weightKg, wallDeg: f.settings.wallDeg, lrFix: f.settings.lrFix };
