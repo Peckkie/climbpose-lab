@@ -74,6 +74,15 @@ export const EN = {
   'g.photo.t': 'Route photo from the same spot', 'g.photo.d': 'Take a photo of the route from where the camera stands (ROUTE → Upload). The route map lines up exactly when it is taken from the same spot.',
   'g.alone.t': 'One climber in the frame', 'g.alone.d': 'Other people walking through the shot can be picked up as the climber.',
   'q.fix': 'How to fix →',
+  // about & privacy
+  'a.open': 'About & privacy', 'a.title': 'About ClimbPose',
+  'a.body': '<p>A climbing movement lab in your browser: it follows the climber\'s skeleton in a video and estimates efficiency, attempts, sends, the crux and body load. Everything is an estimate from single-camera 2D video — best for comparing the same climber on the same problem over time. The Flow score is this app\'s own formula, not a validated measure, and nothing here is medical or safety advice.</p>'
+    + '<h4>Privacy — your video stays on your device</h4><ul>'
+    + '<li>Videos are analysed in this browser. They are <b>never uploaded</b> — there is no server, no account and no analytics.</li>'
+    + '<li>To work, the page downloads: the pose model (Google MediaPipe, from cdn.jsdelivr.net and storage.googleapis.com), the video-export library (cdn.jsdelivr.net) and fonts (Google Fonts). These requests do not contain your video, but those services see your IP address as with any website.</li>'
+    + '<li>Settings, gyms, saved sessions and labels are kept in this browser only (local storage). Clearing site data removes them.</li>'
+    + '<li>Exported videos and files are saved to your device; sharing them is up to you. Ask the people in a clip before you post it.</li></ul>'
+    + '<p>Open source: <a href="https://github.com/Peckkie/climbpose-lab" target="_blank" rel="noopener">github.com/Peckkie/climbpose-lab</a></p>',
   // history
   'hist.title': 'HISTORY', 'hist.save': 'Save this session', 'hist.saved': 'Session saved to history (this browser)',
   'hist.empty': 'No saved sessions yet. Fill in the route (gym, grade, tag) and press Save to track progress on it.',

@@ -131,8 +131,8 @@
 
 ## Phase 7 · ออก v1.0 (1 สัปดาห์)
 
-1. [ ] Deploy (Vercel หรือ GitHub Pages) + โดเมน
-2. [ ] หน้าแนะนำแอป + นโยบายความเป็นส่วนตัว (วิดีโอไม่ออกจากเครื่อง)
+1. [x] Deploy บน GitHub Pages (`.github/workflows/pages.yml`: deploy จาก main หลัง typecheck/test/build ผ่าน) — https://peckkie.github.io/climbpose-lab/ · ยังไม่มีโดเมนของตัวเอง
+2. [x] กล่อง "เกี่ยวกับ & ความเป็นส่วนตัว" ในแอป (ไทย/อังกฤษ): วิดีโอไม่ถูกอัปโหลด, บอกบริการภายนอกที่หน้าเว็บโหลด (MediaPipe/jsDelivr/Google Fonts), ข้อมูลเก็บใน local storage
 3. [ ] Preset export สำหรับ Reels/TikTok/YouTube Shorts + เทมเพลตแคปชัน
 4. [ ] Changelog, tag `v1.0`
 

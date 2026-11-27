@@ -1,6 +1,6 @@
 # CLIMB/POSE
 
-> Repo: [Peckkie/climbpose-lab](https://github.com/Peckkie/climbpose-lab) · Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
+> **Live: https://peckkie.github.io/climbpose-lab/** · Repo: [Peckkie/climbpose-lab](https://github.com/Peckkie/climbpose-lab) · Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
 
 Climbing movement lab that runs in the browser (builds to a single HTML file). Load a climbing video (outdoor rock or gym wall, tripod or handheld), and it:
 
