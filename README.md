@@ -2,6 +2,19 @@
 
 > **Live: https://peckkie.github.io/climbpose-lab/** · Repo: [Peckkie/climbpose-lab](https://github.com/Peckkie/climbpose-lab) · Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · Plan: [docs/ROADMAP.md](docs/ROADMAP.md)
 
+<table>
+<tr>
+<td width="31%"><img src="docs/images/analysis-climb.jpg" alt="Skeleton, holds, CoM trail and HUD on a climb"></td>
+<td width="31%"><img src="docs/images/analysis-crux.jpg" alt="Crux breakdown at the frame before coming off"></td>
+<td width="38%"><img src="docs/images/crux-sequence.jpg" alt="Crux sequence: six frames before the fall in one image"></td>
+</tr>
+<tr>
+<td align="center"><sub>Skeleton, holds, centre-of-mass trail, HUD</sub></td>
+<td align="center"><sub>Crux breakdown: why the attempt failed</sub></td>
+<td align="center"><sub>Crux sequence image, ready to post</sub></td>
+</tr>
+</table>
+
 Climbing movement lab that runs in the browser (builds to a single HTML file). Load a climbing video (outdoor rock or gym wall, tripod or handheld), and it:
 
 - runs **MediaPipe Pose Landmarker** (33 keypoints) frame by frame in the browser
