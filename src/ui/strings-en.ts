@@ -31,7 +31,7 @@ export const EN = {
   'env.detected': 'Detected: {what}{scores} — change it above if wrong.', 'env.detecting': 'Detecting…',
   'env.realRock': 'real rock', 'env.gymWall': 'gym wall', 'env.scores': ' (smooth panels {s}% · vivid holds {v}% · plants {p}%)',
   // 03 look
-  'look.title': 'LOOK', 'show.skel': 'Skeleton', 'show.com': 'CoM path', 'show.limbs': 'Limb trails', 'show.holds': 'Holds (beta map)', 'show.angles': 'Joint angles', 'show.hud': 'HUD', 'show.crux': 'Crux breakdown', 'show.load': 'Body load (kg · Nm)',
+  'look.title': 'LOOK', 'show.skel': 'Skeleton', 'show.com': 'CoM path', 'show.limbs': 'Limb trails', 'show.holds': 'Holds (beta map)', 'show.angles': 'Joint angles', 'show.hud': 'HUD', 'show.crux': 'Crux breakdown', 'show.load': 'Body load (kg · Nm)', 'show.ghost': 'Ghost of other attempt',
   'look.frame': 'Frame', 'frame.orig': 'Original', 'frame.reel': '9:16 Reel / TikTok', 'look.zoom': 'Follow cam (zoom)', 'zoom.off': 'Off',
   // 04 report
   'report.title': 'SEND REPORT', 'report.empty': 'Analyze a video and the efficiency metrics will appear here',

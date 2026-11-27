@@ -29,7 +29,7 @@ export const TH: Partial<Record<keyof typeof EN, string>> = {
   'map.coords': '📍 {lat}, {lng} — พิมพ์ชื่อยิมด้านล่าง', 'map.notMaps': 'ไม่ใช่ลิงก์ Google Maps?',
   'env.detected': 'ตรวจพบ: {what}{scores} — เปลี่ยนด้านบนได้ถ้าไม่ถูก', 'env.detecting': 'กำลังตรวจ…',
   'env.realRock': 'หินจริง', 'env.gymWall': 'ผาจำลอง', 'env.scores': ' (ผนังเรียบ {s}% · โฮลด์สีสด {v}% · ต้นไม้ {p}%)',
-  'look.title': 'หน้าตา', 'show.skel': 'โครงร่าง', 'show.com': 'เส้นทาง CoM', 'show.limbs': 'รอยมือเท้า', 'show.holds': 'โฮลด์ (beta map)', 'show.angles': 'มุมข้อต่อ', 'show.hud': 'HUD', 'show.crux': 'Crux breakdown', 'show.load': 'แรงที่รับ (กก. · Nm)',
+  'look.title': 'หน้าตา', 'show.skel': 'โครงร่าง', 'show.com': 'เส้นทาง CoM', 'show.limbs': 'รอยมือเท้า', 'show.holds': 'โฮลด์ (beta map)', 'show.angles': 'มุมข้อต่อ', 'show.hud': 'HUD', 'show.crux': 'Crux breakdown', 'show.load': 'แรงที่รับ (กก. · Nm)', 'show.ghost': 'เงาของ attempt อื่น',
   'look.frame': 'กรอบภาพ', 'frame.orig': 'ต้นฉบับ', 'frame.reel': '9:16 Reel / TikTok', 'look.zoom': 'กล้องตามตัว (ซูม)', 'zoom.off': 'ปิด',
   'report.title': 'รายงานการปีน', 'report.empty': 'วิเคราะห์คลิปแล้วค่าประสิทธิภาพจะแสดงที่นี่',
   'report.flow': 'FLOW SCORE', 'report.tracked': 'ประมาณจากวิดีโอ 2D · จับตัวนักปีนได้ {p}%',

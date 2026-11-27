@@ -4,7 +4,7 @@ import type { EnvText } from '../environment';
 import type { Style, StyleName } from './style';
 import type { LabelMarks } from './labels';
 
-export type ShowKey = 'skel' | 'com' | 'limbs' | 'holds' | 'angles' | 'hud' | 'crux' | 'load';
+export type ShowKey = 'skel' | 'com' | 'limbs' | 'holds' | 'angles' | 'hud' | 'crux' | 'load' | 'ghost';
 export type FrameMode = 'orig' | 'reel';
 
 export interface RoutePhoto { kind: 'upload' | 'frame'; el: CanvasImageSource; w: number; h: number; k?: number; t?: number; }

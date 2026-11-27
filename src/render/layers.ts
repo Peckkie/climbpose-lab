@@ -4,10 +4,12 @@ import { ENDS } from '../core/segmentation';
 import { clamp01, lerp } from '../util';
 import { line } from './draw';
 import { drawSkeleton } from './skeleton';
-import { trailColor } from './style';
+import { trailColor, BONES_C, BONES_L, BONES_R } from './style';
 import { drawHUD } from './hud';
 import { drawCrux, drawLoad, drawSend } from './overlays';
 import { drawSummary } from './endcards';
+import { alignByHeight, pickGhost } from '../core/compare';
+import type { Analysis, Attempt } from '../types';
 import type { Layer } from './types';
 
 /** Hold markers (beta map) appearing as they are grabbed. */
@@ -73,6 +75,33 @@ const limbTrails: Layer = {
   },
 };
 
+/** Ghost of another attempt at the moment it reached the same height (wall coordinates, so it sits
+ *  right even when the camera moved). */
+const ghostCache = new WeakMap<Analysis, Map<string, Int32Array>>();
+function ghostFrame(D: Analysis, a: Attempt, b: Attempt, i: number): number {
+  let m = ghostCache.get(D); if (!m) { m = new Map(); ghostCache.set(D, m); }
+  const key = `${a.n}>${b.n}`;
+  let map = m.get(key); if (!map) { map = alignByHeight(D.comH, a, b); m.set(key, map); }
+  return map[i - a.i0] ?? -1;
+}
+const ghost: Layer = {
+  name: 'ghost', on: (fc) => !!fc.r.s.show.ghost && fc.D.attempts.length > 1,
+  draw({ ctx, D, u, i, Tw }) {
+    const a = D.attempts.find((x) => i >= x.i0 && i < x.i1); if (!a) return;
+    const b = pickGhost(D.attempts, a); if (!b) return;
+    const j = ghostFrame(D, a, b, i); if (j < 0) return;
+    const P = (k: number) => { const x = D.XW[k][j], y = D.YW[k][j]; return isFinite(x) && isFinite(y) ? Tw(x, y) : null; };
+    ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 6 * u; ctx.setLineDash([10 * u, 8 * u]);
+    for (const [p, q] of BONES_C.concat(BONES_L, BONES_R)) { const A = P(p), B = P(q); if (A && B) line(ctx, A[0], A[1], B[0], B[1]); }
+    ctx.setLineDash([]);
+    const n = P(0), e1 = P(7), e2 = P(8);
+    if (n && e1 && e2) { const hx = (n[0] + e1[0] + e2[0]) / 3, hy = (n[1] + e1[1] + e2[1]) / 3; ctx.lineWidth = 3 * u; ctx.beginPath(); ctx.arc(hx, hy, 14 * u, 0, 7); ctx.stroke();
+      const label = `A${b.n}${b.sent ? ' SENT' : ''} · same height`; ctx.font = `700 ${14 * u}px "JetBrains Mono"`; const w = ctx.measureText(label).width + 14 * u;
+      ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.beginPath(); ctx.roundRect(hx - w / 2, hy - 46 * u, w, 22 * u, 6 * u); ctx.fill(); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, hx, hy - 35 * u); }
+    ctx.restore();
+  },
+};
+
 const skeleton: Layer = { name: 'skeleton', on: (fc) => !!fc.r.s.show.skel, draw: ({ ctx, P, u, st }) => drawSkeleton(ctx, P, u, st) };
 
 /** Elbow / knee angles (hidden while the load overlay is on — same spots). */
@@ -125,4 +154,4 @@ const hud: Layer = { name: 'hud', on: (fc) => !!fc.r.s.show.hud, draw: drawHUD }
 
 const reportCard: Layer = { name: 'report-card', on: (fc) => fc.summary > 0, draw: (fc) => drawSummary(fc.r, fc.summary, fc.u, fc.st) };
 
-export const LAYERS: Layer[] = [holds, comTrail, limbTrails, skeleton, angles, comMarker, overlays, hud, reportCard];
+export const LAYERS: Layer[] = [holds, comTrail, limbTrails, ghost, skeleton, angles, comMarker, overlays, hud, reportCard];
