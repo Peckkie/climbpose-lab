@@ -8,6 +8,7 @@ import { lockUI } from '../app/actions';
 import { $, checked, num, setStatus, video } from './dom';
 import { envMode } from './environment-panel';
 import { routeInfo } from './route-panel';
+import { t } from './i18n';
 
 const save = (blob: Blob, name: string) => download(blob, name, $<HTMLElement>('#dlArea'));
 
@@ -22,17 +23,17 @@ async function exportVideo(): Promise<void> {
       try {
         blob = await renderOffline(R, (n, total, eta) => {
           $<HTMLElement>('#bar i').style.width = (100 * n / total).toFixed(1) + '%';
-          setStatus(`Rendering frame ${n}/${total} · ~${Math.ceil(eta)} s left`, 'busy');
+          setStatus(t('st.rendering', { n, total, eta: Math.ceil(eta) }), 'busy');
         });
         how = 'rendered';
       } catch (e) { console.warn('offline render failed, falling back', e); }
       bar.style.display = 'none';
     }
-    if (!blob) { S.busy = false; blob = await recordRealtime(R, () => setStatus('Recording in real time… keep this tab visible', 'busy')); how = 'recorded'; }
+    if (!blob) { S.busy = false; blob = await recordRealtime(R, () => setStatus(t('st.recording'), 'busy')); how = 'recorded'; }
     const ext = blob.type.includes('mp4') ? 'mp4' : 'webm', g = routeInfo().grade;
     save(blob, `${S.srcName}${g ? '_' + g.replace(/[^\w+]/g, '') : ''}_climbpose_${S.style}_${S.frame}.${ext}`);
-    setStatus(`Video ${how} (${(blob.size / 1048576).toFixed(0)} MB) — saved to Downloads`, 'ok');
-  } catch (e) { console.error(e); setStatus('Export failed: ' + (e as Error).message, 'err'); }
+    setStatus(t('st.exported', { how: how === 'rendered' ? t('st.howRendered') : t('st.howRecorded'), mb: (blob.size / 1048576).toFixed(0) }), 'ok');
+  } catch (e) { console.error(e); setStatus(t('st.exportFail', { msg: (e as Error).message }), 'err'); }
   S.busy = false; S.exporting = false; lockUI(false); await seekTo(video, S.D.t0);
 }
 
@@ -60,6 +61,6 @@ export function initExportPanel(): void {
       settings: { heightCm: num('#height') || 170, fps: raw.fps, model: $<HTMLSelectElement>('#model').value, wallDeg: num('#wall') || 0, weightKg: w > 0 ? w : null, cameraCompensation: checked('#camcomp'), lrFix: checked('#lrfix') },
     });
     save(new Blob([JSON.stringify(fx)], { type: 'application/json' }), `${S.srcName}.pose.json`);
-    setStatus('Pose fixture saved — put it in tests/fixtures/ and run npm run golden:update', 'ok');
+    setStatus(t('st.fixture'), 'ok');
   };
 }

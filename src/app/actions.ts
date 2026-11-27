@@ -11,6 +11,7 @@ import { updatePhotoInfo } from '../ui/route-panel';
 import { applyEnv, envMode, runEnvDetection } from '../ui/environment-panel';
 import { onClipLoaded, refreshLabels } from '../ui/label-panel';
 import { S, R } from './store';
+import { t } from '../ui/i18n';
 
 const RESULT_BUTTONS = ['#rec', '#csv', '#json', '#fixture'];
 
@@ -42,16 +43,16 @@ export function loadSrc(src: string, name: string, cors: boolean): void {
   S.srcFile = (name || 'clip').split(/[\\/]/).pop()!.slice(0, 60);
   S.srcName = (name || 'clip').replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_').slice(0, 40);
   onClipLoaded();
-  setStatus('Loading video…', 'busy');
+  setStatus(t('st.loading'), 'busy');
   video.onloadedmetadata = () => {
     $<HTMLElement>('#empty').style.display = 'none';
     layoutCanvas(cv, video, S.frame);
     $('#analyze').disabled = false;
     $('#t0').value = '0'; $('#t1').value = Math.min(video.duration, 60).toFixed(1); $('#t1').max = video.duration.toFixed(1);
-    setStatus(`Video ${video.videoWidth}×${video.videoHeight} · ${video.duration.toFixed(1)} s — set a range and press "Analyze climb"`, 'ok');
+    setStatus(t('st.videoReady', { w: video.videoWidth, h: video.videoHeight, d: video.duration.toFixed(1) }), 'ok');
     S.envDetected = null; applyEnv(); runEnvDetection();
   };
-  video.onerror = () => setStatus('Could not open the video (a URL must allow CORS)', 'err');
+  video.onerror = () => setStatus(t('st.videoErr'), 'err');
 }
 
 let abort: AbortController | null = null;
@@ -59,14 +60,14 @@ const analyzeBtn = () => $<HTMLButtonElement>('#analyze');
 
 /** M01 media → M02 pose + M03 camera → core. While running, the Analyze button cancels. */
 export async function analyze(): Promise<void> {
-  if (S.busy) { if (abort) { abort.abort(); setStatus('Cancelling…', 'busy'); } return; }
+  if (S.busy) { if (abort) { abort.abort(); setStatus(t('st.cancelling'), 'busy'); } return; }
   S.busy = true; lockUI(true);
   abort = new AbortController();
-  const btn = analyzeBtn(), label = btn.textContent; btn.disabled = false; btn.textContent = '■ Cancel analysis';
+  const btn = analyzeBtn(); btn.disabled = false; btn.textContent = t('src.cancel');
   const bar = $<HTMLElement>('#bar');
   try {
     const kind = $<HTMLSelectElement>('#model').value as ModelKind;
-    setStatus('Loading pose model (' + kind + ')…', 'busy');
+    setStatus(t('st.loadModel', { kind }), 'busy');
     video.pause(); bar.style.display = 'block';
     let tStart = 0, mode = '';
     const vw = video.videoWidth, vh = video.videoHeight;
@@ -79,22 +80,22 @@ export async function analyze(): Promise<void> {
           drawFrame(R, -1);
           $<HTMLElement>('#bar i').style.width = (100 * (i + 1) / N).toFixed(1) + '%';
           const el = (performance.now() - tStart) / 1000, eta = el / (i + 1) * (N - i - 1);
-          setStatus(`Analyzing frame ${i + 1}/${N} · climber found ${Math.round(100 * nFound / (i + 1))}% · ~${Math.ceil(eta)} s left`, 'busy');
+          setStatus(t('st.analyzing', { i: i + 1, n: N, p: Math.round(100 * nFound / (i + 1)), eta: Math.ceil(eta) }), 'busy');
         }
       },
     });
     S.livePose = null; S.raw = raw; S.cache = {};
     const N = raw.N;
-    if (found < N * 0.2) setStatus('Climber found in very few frames (' + Math.round(100 * found / N) + '%). Try the Heavy model or a clip where the climber is larger.', 'err');
-    else setStatus('Done · climber found in ' + Math.round(100 * found / N) + '% of frames — press play', 'ok');
+    if (found < N * 0.2) setStatus(t('st.fewFound', { p: Math.round(100 * found / N) }), 'err');
+    else setStatus(t('st.done', { p: Math.round(100 * found / N) }), 'ok');
     process();
     await seekTo(video, raw.t0);
   } catch (e) {
     S.livePose = null;
-    if (e instanceof Cancelled) setStatus('Analysis cancelled' + (S.D ? ' — showing the previous result' : ''), 'ok');
-    else { console.error(e); setStatus('Analysis failed: ' + (e as Error).message, 'err'); }
+    if (e instanceof Cancelled) setStatus(S.D ? t('st.cancelledKeep') : t('st.cancelled'), 'ok');
+    else { console.error(e); setStatus(t('st.failed', { msg: (e as Error).message }), 'err'); }
   }
-  abort = null; btn.textContent = label;
+  abort = null; btn.textContent = t('src.analyze');
   bar.style.display = 'none'; S.busy = false; lockUI(false);
 }
 

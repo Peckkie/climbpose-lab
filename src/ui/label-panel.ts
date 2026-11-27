@@ -11,6 +11,7 @@ import { store } from '../history/storage';
 import { fmt } from '../util';
 import { S } from '../app/store';
 import { $, setStatus, video } from './dom';
+import { t as tr } from './i18n';
 
 let session: LabelSession | null = null;
 const key = (clip: string) => `climbpose.labels.${clip}`;
@@ -33,18 +34,18 @@ function save(): void {
 }
 
 function act(f: (s: LabelSession, t: number) => string | void): void {
-  if (!session || !video.src) { setStatus('Load a video first', 'err'); return; }
+  if (!session || !video.src) { setStatus(tr('st.loadVideo'), 'err'); return; }
   try { const msg = f(session, video.currentTime); save(); refreshLabels(); if (msg) setStatus(msg, 'ok'); }
-  catch (e) { if (e instanceof LabelError) setStatus('Label: ' + e.message, 'err'); else throw e; }
+  catch (e) { if (e instanceof LabelError) setStatus(tr('st.lblErr', { msg: e.message }), 'err'); else throw e; }
 }
 
 const ACTIONS: Record<string, (s: LabelSession, t: number) => string> = {
-  start: (s, t) => { markStart(s, t); return `Attempt starts at ${fmt(t)} — press E where it ends`; },
-  end: (s, t) => { const a = markEnd(s, t); return `Attempt ${s.labels.attempts.indexOf(a) + 1}: ${fmt(a.start_s)} – ${fmt(a.end_s)} (not sent — press X if it was)`; },
-  sent: (s, t) => { const a = toggleSent(s.labels, t); return `Attempt ${s.labels.attempts.indexOf(a) + 1}: ${a.sent ? 'SENT' : 'not sent'}`; },
-  crux: (s, t) => { const a = markCrux(s.labels, t); return `Crux of attempt ${s.labels.attempts.indexOf(a) + 1} at ${fmt(t)}`; },
-  hold: (s, t) => { const a = markLastHold(s.labels, t); return `Last hold of attempt ${s.labels.attempts.indexOf(a) + 1} at ${fmt(t)}`; },
-  lr: (s, t) => { const sp = markLr(s, t); return sp ? `Left/right wrong ${fmt(sp.start_s)} – ${fmt(sp.end_s)}` : `Left/right wrong from ${fmt(t)} — press L where it is right again`; },
+  start: (s, t) => { markStart(s, t); return tr('st.l.start', { t: fmt(t) }); },
+  end: (s, t) => { const a = markEnd(s, t); return tr('st.l.end', { n: s.labels.attempts.indexOf(a) + 1, a: fmt(a.start_s), b: fmt(a.end_s) }); },
+  sent: (s, t) => { const a = toggleSent(s.labels, t); return tr('st.l.sent', { n: s.labels.attempts.indexOf(a) + 1, r: a.sent ? tr('lbl.sentWord') : tr('lbl.notSent') }); },
+  crux: (s, t) => { const a = markCrux(s.labels, t); return tr('st.l.crux', { n: s.labels.attempts.indexOf(a) + 1, t: fmt(t) }); },
+  hold: (s, t) => { const a = markLastHold(s.labels, t); return tr('st.l.hold', { n: s.labels.attempts.indexOf(a) + 1, t: fmt(t) }); },
+  lr: (s, t) => { const sp = markLr(s, t); return sp ? tr('st.l.lr', { a: fmt(sp.start_s), b: fmt(sp.end_s) }) : tr('st.l.lrOpen', { t: fmt(t) }); },
 };
 const KEYS: Record<string, string> = { s: 'start', e: 'end', x: 'sent', c: 'crux', h: 'hold', l: 'lr' };
 
@@ -55,16 +56,16 @@ export function refreshLabels(): void {
     open: session.openStart, lr: (session.labels.lrErrors || []).map((x) => ({ s: x.start_s, e: x.end_s })), lrOpen: session.openLr?.start_s ?? null,
   } : null;
   const list = $<HTMLElement>('#lblList'), cmp = $<HTMLElement>('#lblCompare');
-  if (!session) { list.innerHTML = '<div class="note">Load a video to label it.</div>'; cmp.innerHTML = ''; return; }
+  if (!session) { list.innerHTML = `<div class="note">${tr('lbl.noVideo')}</div>`; cmp.innerHTML = ''; return; }
   const L = session.labels, t = (x: number) => `<a href="#" data-seek="${x}">${fmt(x)}</a>`;
   $('#lblBy').value = L.labeledBy; $<HTMLSelectElement>('#lblStatus').value = L.status;
-  let html = `<div class="note" style="margin:8px 0 4px">Clip <b>${esc(L.clip)}</b> · ${L.attempts.length} attempt${L.attempts.length === 1 ? '' : 's'}</div>`;
-  html += L.attempts.map((a, k) => `<div class="m"><div class="k"><span>#${k + 1} · ${t(a.start_s)} – ${t(a.end_s)} · <b style="color:${a.sent ? '#3DDC97' : 'var(--bad)'}">${a.sent ? 'SENT' : 'not sent'}</b></span><a href="#" data-del="${k}" style="color:var(--mute)">✕</a></div>
-    <p>${a.crux_s != null ? `crux ${t(a.crux_s)}` : a.sent ? '' : 'crux: –'}${a.last_hold_s != null ? ` · last hold ${t(a.last_hold_s)}` : ''}</p>
-    ${a.sent ? '' : `<input type="text" data-reason="${k}" placeholder="Why they came off (e.g. hips low, foot slipped)" value="${esc(a.fall_reason || '')}" style="width:100%;margin-top:4px">`}</div>`).join('');
-  if (session.openStart != null) html += `<div class="note" style="color:var(--accent)">Attempt open from ${t(session.openStart)} — press E at the end</div>`;
-  for (const [k, sp] of (L.lrErrors || []).entries()) html += `<div class="note">L/R wrong ${t(sp.start_s)} – ${t(sp.end_s)} <a href="#" data-lrdel="${k}" style="color:var(--mute)">✕</a></div>`;
-  if (session.openLr) html += `<div class="note" style="color:#FF7A00">L/R wrong from ${t(session.openLr.start_s)} — press L where it is right again</div>`;
+  let html = `<div class="note" style="margin:8px 0 4px">${tr('lbl.clip', { clip: esc(L.clip), n: L.attempts.length })}</div>`;
+  html += L.attempts.map((a, k) => `<div class="m"><div class="k"><span>#${k + 1} · ${t(a.start_s)} – ${t(a.end_s)} · <b style="color:${a.sent ? '#3DDC97' : 'var(--bad)'}">${a.sent ? tr('lbl.sentWord') : tr('lbl.notSent')}</b></span><a href="#" data-del="${k}" style="color:var(--mute)">✕</a></div>
+    <p>${a.crux_s != null ? tr('lbl.cruxAt', { t: t(a.crux_s) }) : a.sent ? '' : tr('lbl.cruxNone')}${a.last_hold_s != null ? tr('lbl.lastAt', { t: t(a.last_hold_s) }) : ''}</p>
+    ${a.sent ? '' : `<input type="text" data-reason="${k}" placeholder="${tr('lbl.reasonPh')}" value="${esc(a.fall_reason || '')}" style="width:100%;margin-top:4px">`}</div>`).join('');
+  if (session.openStart != null) html += `<div class="note" style="color:var(--accent)">${tr('lbl.open', { t: t(session.openStart) })}</div>`;
+  for (const [k, sp] of (L.lrErrors || []).entries()) html += `<div class="note">${tr('lbl.lrSpan', { a: t(sp.start_s), b: t(sp.end_s) })} <a href="#" data-lrdel="${k}" style="color:var(--mute)">✕</a></div>`;
+  if (session.openLr) html += `<div class="note" style="color:#FF7A00">${tr('lbl.lrOpen', { t: t(session.openLr.start_s) })}</div>`;
   const warn = validateLabels(L);
   if (warn.length) html += `<div class="note" style="color:var(--bad)">${warn.map(esc).join('<br>')}</div>`;
   list.innerHTML = html;
@@ -75,9 +76,9 @@ export function refreshLabels(): void {
   // labels vs this app's result
   if (S.D && L.attempts.length) {
     const { rows, sum } = compareLabels(L, predictedAttempts(S.D)), m = metrics(sum);
-    cmp.innerHTML = `<div class="note" style="margin-top:10px"><b>VS APP RESULT</b> · found ${sum.tp}/${m.labelledAttempts} · extra ${sum.fp} · start err ${m.startErrMeanS ?? '–'} s · end err ${m.endErrMeanS ?? '–'} s · sent/not right ${sum.sentOk}/${sum.sentN}${m.cruxLabelled ? ` · crux err ${m.cruxErrMeanS ?? '–'} s` : ''}</div>`
-      + rows.map((r) => `<div class="note">${r.label != null ? '#' + (r.label + 1) : '—'} · app: ${esc(r.predText)}${r.iou != null ? ` · Δstart ${r.startErrS} s · Δend ${r.endErrS} s${r.sentOk ? '' : ' · <b style="color:var(--bad)">sent wrong</b>'}` : ''}${r.cruxErrS != null ? ` · Δcrux ${r.cruxErrS.toFixed(2)} s` : r.cruxErrS === null ? ' · <b style="color:var(--bad)">no crux found</b>' : ''}</div>`).join('');
-  } else cmp.innerHTML = S.D ? '' : '<div class="note">Analyze the clip to compare your labels with the app’s result.</div>';
+    cmp.innerHTML = `<div class="note" style="margin-top:10px">${tr('lbl.vs', { tp: sum.tp, n: m.labelledAttempts, fp: sum.fp, s: m.startErrMeanS ?? '–', e: m.endErrMeanS ?? '–', ok: sum.sentOk, sn: sum.sentN, crux: m.cruxLabelled ? tr('lbl.vsCrux', { c: m.cruxErrMeanS ?? '–' }) : '' })}</div>`
+      + rows.map((r) => `<div class="note">${r.label != null ? '#' + (r.label + 1) : '—'} · ${tr('lbl.app')}: ${esc(r.predText)}${r.iou != null ? ` · Δstart ${r.startErrS} s · Δend ${r.endErrS} s${r.sentOk ? '' : ` · <b style="color:var(--bad)">${tr('lbl.sentWrong')}</b>`}` : ''}${r.cruxErrS != null ? ` · Δcrux ${r.cruxErrS.toFixed(2)} s` : r.cruxErrS === null ? ` · <b style="color:var(--bad)">${tr('lbl.noCrux')}</b>` : ''}</div>`).join('');
+  } else cmp.innerHTML = S.D ? '' : `<div class="note">${tr('lbl.analyzeFirst')}</div>`;
 }
 
 export function initLabelPanel(): void {
@@ -93,8 +94,8 @@ export function initLabelPanel(): void {
   $<HTMLButtonElement>('#lblSave').onclick = () => {
     if (!session) return;
     const warn = validateLabels(session.labels);
-    if (warn.length) setStatus(`Saved with ${warn.length} problem${warn.length === 1 ? '' : 's'} — see the LABEL card`, 'err');
-    else setStatus(`Labels saved — put ${session.labels.clip}.labels.json in tests/fixtures/ next to its pose fixture`, 'ok');
+    if (warn.length) setStatus(tr('st.lblSavedProblems', { n: warn.length }), 'err');
+    else setStatus(tr('st.lblSaved', { clip: session.labels.clip }), 'ok');
     download(new Blob([serializeLabels(session.labels)], { type: 'application/json' }), `${session.labels.clip}.labels.json`, $<HTMLElement>('#dlArea'));
   };
   $<HTMLButtonElement>('#lblLoad').onclick = () => $('#lblFile').click();
@@ -102,13 +103,13 @@ export function initLabelPanel(): void {
     const inp = e.target as HTMLInputElement, f = inp.files?.[0]; inp.value = ''; if (!f || !session) return;
     try {
       const L = parseLabels(await f.text());
-      if (L.clip && L.clip !== S.srcName) setStatus(`Loaded labels for "${L.clip}" onto "${S.srcName}" — check that it is the same clip`, 'err');
-      else setStatus(`Loaded ${L.attempts.length} labelled attempts`, 'ok');
+      if (L.clip && L.clip !== S.srcName) setStatus(tr('st.lblOther', { a: L.clip, b: S.srcName }), 'err');
+      else setStatus(tr('st.lblLoaded', { n: L.attempts.length }), 'ok');
       L.clip = S.srcName; session = newSession(L); save(); refreshLabels();
-    } catch (err) { setStatus('Could not read labels: ' + (err as Error).message, 'err'); }
+    } catch (err) { setStatus(tr('st.lblReadErr', { msg: (err as Error).message }), 'err'); }
   };
   $<HTMLButtonElement>('#lblClear').onclick = () => {
-    if (!session || !confirm(`Delete all labels for ${session.labels.clip}? This cannot be undone.`)) return;
+    if (!session || !confirm(tr('lbl.clearConfirm', { clip: session.labels.clip }))) return;
     session = newSession(newLabels(session.labels.clip, session.labels.labeledBy)); save(); refreshLabels();
   };
   refreshLabels();

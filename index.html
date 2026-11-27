@@ -6,19 +6,20 @@
 <title>Climb/Pose</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0A0B0D; --panel:#111316; --panel2:#16191D; --line:#24282E; --text:#EDEEF0; --mute:#878D96;
   --accent:#C6FF00; --cyan:#00F0FF; --pink:#FF2BD6; --orange:#FF5A1F; --bad:#FF4D5E;
-  --sans:"Space Grotesk",system-ui,sans-serif;
-  --disp:"Space Grotesk",system-ui,sans-serif;
-  --mono:"JetBrains Mono",ui-monospace,monospace;
+  --sans:"Space Grotesk","Noto Sans Thai",system-ui,sans-serif;
+  --disp:"Space Grotesk","Noto Sans Thai",system-ui,sans-serif;
+  --mono:"JetBrains Mono","Noto Sans Thai",ui-monospace,monospace;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
 button,input,select{font:inherit;color:inherit}
 header{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.lang{display:flex;gap:2px;margin-left:8px}.lang button{font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid var(--line);background:none;color:var(--mute);cursor:pointer;border-radius:6px}.lang button.on{color:var(--text);border-color:var(--mute)}
 .logo{font-family:var(--disp);font-weight:700;font-size:20px;letter-spacing:.04em}
 .logo b{color:var(--accent)}
 .tag{font-family:var(--mono);font-size:11px;color:var(--mute);border:1px solid var(--line);padding:3px 8px;border-radius:99px}
@@ -83,6 +84,7 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
   <div class="logo">CLIMB<b>/</b>POSE</div>
   <span class="tag">movement lab · v0.3-dev</span>
   <div id="status"><i></i><span>Choose a climbing video to start</span></div>
+  <div class="lang"><button data-lang="th">TH</button><button data-lang="en">EN</button></div>
 </header>
 <main>
   <div class="stage">
@@ -90,92 +92,92 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
       <canvas id="cv" width="1280" height="720"></canvas>
       <div class="empty" id="empty">
         <h2>CLIMB<b>/</b>POSE</h2>
-        <div>Drop a climbing video here, or pick one from the panel</div>
-        <div style="font-size:12px">Outdoor rock · gym wall · boulder · lead — handheld footage is fine</div>
+        <div data-i18n="empty.drop">Drop a climbing video here, or pick one from the panel</div>
+        <div style="font-size:12px" data-i18n="empty.kinds">Outdoor rock · gym wall · boulder · lead — handheld footage is fine</div>
       </div>
     </div>
     <div class="player">
-      <button id="stepB" title="Previous frame (,)">‹</button>
-      <button id="play" title="Play / pause (space)">▶</button>
-      <button id="stepF" title="Next frame (.)">›</button>
-      <select id="rate" title="Playback speed" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option></select>
+      <button id="stepB" title="Previous frame (,)" data-i18n-title="player.prev">‹</button>
+      <button id="play" title="Play / pause (space)" data-i18n-title="player.play">▶</button>
+      <button id="stepF" title="Next frame (.)" data-i18n-title="player.next">›</button>
+      <select id="rate" title="Playback speed" data-i18n-title="player.rate" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option></select>
       <input id="seek" type="range" min="0" max="1000" value="0">
       <div class="time" id="time">00:00.0 / 00:00.0</div>
     </div>
   </div>
   <aside>
     <section>
-      <h3><span>01</span> SOURCE</h3>
-      <div class="drop" id="drop">📹 Click or drag a video file here<br><small>mp4 · mov · webm</small></div>
+      <h3><span>01</span> <span data-i18n="src.title">SOURCE</span></h3>
+      <div class="drop" id="drop" data-i18n-html="src.drop">📹 Click or drag a video file here<br><small>mp4 · mov · webm</small></div>
       <input id="file" type="file" accept="video/*" hidden>
-      <div class="row"><input id="url" type="text" placeholder="…or paste a video URL (CORS required)"><button class="btn small" id="loadUrl">Load</button></div>
-      <div class="row"><label>Analyze range (s)</label><input id="t0" type="number" value="0" min="0" step="0.5" style="width:62px"><span style="color:var(--mute)">–</span><input id="t1" type="number" value="0" min="0" step="0.5" style="width:62px"></div>
-      <div class="row"><label>Climber height (cm)</label><input id="height" type="number" value="170" min="120" max="220"></div>
-      <div class="row"><label>Body weight (kg)</label><input id="weight" type="number" value="" placeholder="unknown" min="30" max="150"></div>
-      <div class="row"><label>Wall angle</label><select id="wall"><option value="-10">Slab (−10°)</option><option value="0" selected>Vertical (0°)</option><option value="15">Slight overhang (15°)</option><option value="30">Overhang (30°)</option><option value="45">Steep (45°)</option></select></div>
-      <div class="row"><label>Pose model</label><select id="model"><option value="full">Full · faster</option><option value="heavy" selected>Heavy · more accurate</option></select></div>
-      <div class="row"><label>Analyzed frames / sec</label><select id="fps"><option>15</option><option selected>30</option></select></div>
-      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="camcomp" checked> Compensate camera pan / handheld (lock to wall)</label><label><input type="checkbox" id="lrfix" checked> Fix left/right swaps (temporal)</label></div>
-      <button class="btn primary" id="analyze" disabled>Analyze climb</button>
+      <div class="row"><input id="url" type="text" placeholder="…or paste a video URL (CORS required)" data-i18n-ph="src.url"><button class="btn small" id="loadUrl" data-i18n="src.load">Load</button></div>
+      <div class="row"><label data-i18n="src.range">Analyze range (s)</label><input id="t0" type="number" value="0" min="0" step="0.5" style="width:62px"><span style="color:var(--mute)">–</span><input id="t1" type="number" value="0" min="0" step="0.5" style="width:62px"></div>
+      <div class="row"><label data-i18n="src.height">Climber height (cm)</label><input id="height" type="number" value="170" min="120" max="220"></div>
+      <div class="row"><label data-i18n="src.weight">Body weight (kg)</label><input id="weight" type="number" value="" placeholder="unknown" data-i18n-ph="src.weightPh" min="30" max="150"></div>
+      <div class="row"><label data-i18n="src.wall">Wall angle</label><select id="wall"><option value="-10" data-i18n="wall.slab">Slab (−10°)</option><option value="0" selected data-i18n="wall.vertical">Vertical (0°)</option><option value="15" data-i18n="wall.slight">Slight overhang (15°)</option><option value="30" data-i18n="wall.overhang">Overhang (30°)</option><option value="45" data-i18n="wall.steep">Steep (45°)</option></select></div>
+      <div class="row"><label data-i18n="src.model">Pose model</label><select id="model"><option value="full" data-i18n="model.full">Full · faster</option><option value="heavy" selected data-i18n="model.heavy">Heavy · more accurate</option></select></div>
+      <div class="row"><label data-i18n="src.fps">Analyzed frames / sec</label><select id="fps"><option>15</option><option selected>30</option></select></div>
+      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="camcomp" checked> <span data-i18n="src.camcomp">Compensate camera pan / handheld (lock to wall)</span></label><label><input type="checkbox" id="lrfix" checked> <span data-i18n="src.lrfix">Fix left/right swaps (temporal)</span></label></div>
+      <button class="btn primary" id="analyze" disabled data-i18n="src.analyze">Analyze climb</button>
       <div class="bar" id="bar"><i></i></div>
     </section>
     <section>
-      <h3><span>02</span> ROUTE</h3>
-      <div class="row"><label>Where</label><select id="env"><option value="auto">Auto-detect</option><option value="gym">Gym wall</option><option value="rock">Real rock (outdoor)</option></select></div>
+      <h3><span>02</span> <span data-i18n="route.title">ROUTE</span></h3>
+      <div class="row"><label data-i18n="route.where">Where</label><select id="env"><option value="auto" data-i18n="env.auto">Auto-detect</option><option value="gym" data-i18n="env.gym">Gym wall</option><option value="rock" data-i18n="env.rock">Real rock (outdoor)</option></select></div>
       <div id="envInfo" class="note" style="margin-top:4px"></div>
-      <div class="row"><label id="placeLbl">Gym</label><select id="gym"></select><a id="gymPin" class="btn small" target="_blank" rel="noopener" style="display:none;text-decoration:none" title="Open in Google Maps">📍</a></div>
+      <div class="row"><label id="placeLbl">Gym</label><select id="gym"></select><a id="gymPin" class="btn small" target="_blank" rel="noopener" style="display:none;text-decoration:none" title="Open in Google Maps" data-i18n-title="route.pin">📍</a></div>
       <div id="gymForm" style="display:none;margin-top:8px;padding:10px;border:1px dashed var(--line);border-radius:10px">
-        <div class="row" style="margin-top:0"><input id="gymMap" type="text" placeholder="Paste Google Maps link (optional)"></div>
+        <div class="row" style="margin-top:0"><input id="gymMap" type="text" placeholder="Paste Google Maps link (optional)" data-i18n-ph="gym.mapPh"></div>
         <div class="row"><input id="gymName" type="text" placeholder="Gym name"></div>
         <div id="gymMapInfo" class="note" style="margin-top:6px;display:none"></div>
-        <div class="row"><label>Grade system</label><select id="gymSys"><option value="V">V-scale (V0–V12)</option><option value="Font">Font (4–8C)</option><option value="Color" id="sysColor">Colour circuit</option></select></div>
+        <div class="row"><label data-i18n="gym.sys">Grade system</label><select id="gymSys"><option value="V" data-i18n="sys.v">V-scale (V0–V12)</option><option value="Font" data-i18n="sys.font">Font (4–8C)</option><option value="Color" id="sysColor" data-i18n="sys.color">Colour circuit</option></select></div>
         <div class="row" id="gymColorsRow" style="display:none"><input id="gymColors" type="text" placeholder="Yellow=V0-V1, Green=V2-V3, Blue=V4-V5"></div>
-        <div class="row"><button class="btn small" id="gymSave">Save gym</button><button class="btn small" id="gymCancel">Cancel</button></div>
+        <div class="row"><button class="btn small" id="gymSave" data-i18n="gym.save">Save gym</button><button class="btn small" id="gymCancel" data-i18n="gym.cancel">Cancel</button></div>
       </div>
-      <div class="row"><label>Grade</label><select id="grade"></select></div>
-      <div class="row" id="tagRow"><label>Tag colour</label><select id="tag"></select></div>
-      <div class="row"><input id="rname" type="text" placeholder="Route name (optional)"></div>
-      <div class="row"><label>Route photo</label><button class="btn small" id="photoBtn">Upload</button><button class="btn small" id="photoFrame" title="Use the frame on screen now">This frame</button><button class="btn small" id="photoAuto" title="Frame where the attempt starts">Auto</button></div>
+      <div class="row"><label data-i18n="route.grade">Grade</label><select id="grade"></select></div>
+      <div class="row" id="tagRow"><label data-i18n="route.tag">Tag colour</label><select id="tag"></select></div>
+      <div class="row"><input id="rname" type="text" placeholder="Route name (optional)" data-i18n-ph="route.namePh"></div>
+      <div class="row"><label data-i18n="route.photo">Route photo</label><button class="btn small" id="photoBtn" data-i18n="photo.upload">Upload</button><button class="btn small" id="photoFrame" title="Use the frame on screen now" data-i18n-title="photo.frameTitle"><span data-i18n="photo.frame">This frame</span></button><button class="btn small" id="photoAuto" title="Frame where the attempt starts" data-i18n-title="photo.autoTitle"><span data-i18n="photo.auto">Auto</span></button></div>
       <input id="photoFile" type="file" accept="image/*" hidden>
       <div id="photoInfo" class="note">Auto: the route map uses the frame where the attempt starts. Best results: take the route photo from the same spot as the camera, camera on a tripod.</div>
-      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="tagMode"> ✎ Tag holds on the video (click = hand, shift-click = foot, click a hold to remove)</label></div>
+      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="tagMode"> <span data-i18n="route.tagMode">✎ Tag holds on the video (click = hand, shift-click = foot, click a hold to remove)</span></label></div>
     </section>
     <section>
-      <h3><span>03</span> LOOK</h3>
+      <h3><span>03</span> <span data-i18n="look.title">LOOK</span></h3>
       <div class="chips" id="styles">
         <button class="chip on" data-style="neon">NEON</button>
         <button class="chip" data-style="chalk">CHALK</button>
         <button class="chip" data-style="thermal">THERMAL</button>
       </div>
       <div class="toggles">
-        <label><input type="checkbox" data-show="skel" checked> Skeleton</label>
-        <label><input type="checkbox" data-show="com" checked> CoM path</label>
-        <label><input type="checkbox" data-show="limbs" checked> Limb trails</label>
-        <label><input type="checkbox" data-show="holds" checked> Holds (beta map)</label>
-        <label><input type="checkbox" data-show="angles" checked> Joint angles</label>
-        <label><input type="checkbox" data-show="hud" checked> HUD</label>
-        <label><input type="checkbox" data-show="crux" checked> Crux breakdown</label>
-        <label><input type="checkbox" data-show="load" checked> Body load (kg · Nm)</label>
+        <label><input type="checkbox" data-show="skel" checked> <span data-i18n="show.skel">Skeleton</span></label>
+        <label><input type="checkbox" data-show="com" checked> <span data-i18n="show.com">CoM path</span></label>
+        <label><input type="checkbox" data-show="limbs" checked> <span data-i18n="show.limbs">Limb trails</span></label>
+        <label><input type="checkbox" data-show="holds" checked> <span data-i18n="show.holds">Holds (beta map)</span></label>
+        <label><input type="checkbox" data-show="angles" checked> <span data-i18n="show.angles">Joint angles</span></label>
+        <label><input type="checkbox" data-show="hud" checked> <span data-i18n="show.hud">HUD</span></label>
+        <label><input type="checkbox" data-show="crux" checked> <span data-i18n="show.crux">Crux breakdown</span></label>
+        <label><input type="checkbox" data-show="load" checked> <span data-i18n="show.load">Body load (kg · Nm)</span></label>
       </div>
-      <div class="row"><label>Frame</label><select id="frame"><option value="orig">Original</option><option value="reel">9:16 Reel / TikTok</option></select></div>
-      <div class="row"><label>Follow cam (zoom)</label><select id="zoom"><option value="0">Off</option><option value="1">1.0×</option><option value="1.4">1.4×</option><option value="1.8">1.8×</option><option value="2.4">2.4×</option></select></div>
+      <div class="row"><label data-i18n="look.frame">Frame</label><select id="frame"><option value="orig" data-i18n="frame.orig">Original</option><option value="reel" data-i18n="frame.reel">9:16 Reel / TikTok</option></select></div>
+      <div class="row"><label data-i18n="look.zoom">Follow cam (zoom)</label><select id="zoom"><option value="0" data-i18n="zoom.off">Off</option><option value="1">1.0×</option><option value="1.4">1.4×</option><option value="1.8">1.8×</option><option value="2.4">2.4×</option></select></div>
     </section>
     <section id="statsSec">
-      <h3><span>04</span> SEND REPORT</h3>
-      <div id="stats"><div class="note">Analyze a video and the efficiency metrics will appear here</div></div>
+      <h3><span>04</span> <span data-i18n="report.title">SEND REPORT</span></h3>
+      <div id="stats"><div class="note" data-i18n="report.empty">Analyze a video and the efficiency metrics will appear here</div></div>
     </section>
     <section>
-      <h3><span>05</span> EXPORT</h3>
-      <button class="btn primary" id="rec" disabled>⏺ Export video with overlays</button>
+      <h3><span>05</span> <span data-i18n="exp.title">EXPORT</span></h3>
+      <button class="btn primary" id="rec" disabled data-i18n="exp.video">⏺ Export video with overlays</button>
       <div class="grid2">
-        <button class="btn small" id="csv" disabled>Per-frame CSV</button>
-        <button class="btn small" id="json" disabled>Summary JSON</button>
+        <button class="btn small" id="csv" disabled data-i18n="exp.csv">Per-frame CSV</button>
+        <button class="btn small" id="json" disabled data-i18n="exp.json">Summary JSON</button>
       </div>
-      <button class="btn small" id="fixture" disabled style="margin-top:8px;width:100%" title="For developers: raw pose data + v0.2 results, used by the automated tests">Pose fixture (dev)</button>
+      <button class="btn small" id="fixture" disabled style="margin-top:8px;width:100%" title="For developers: raw pose data for the automated tests" data-i18n-title="exp.fixtureTitle">Pose fixture (dev)</button>
       <div id="dlArea"></div>
       <details>
-        <summary>How it is computed</summary>
-        <ul>
+        <summary data-i18n="exp.how">How it is computed</summary>
+        <ul data-i18n-html="exp.howList">
           <li><b>Pose</b>: MediaPipe Pose Landmarker (33 keypoints) run frame by frame; short gaps are interpolated and signals Gaussian-smoothed</li>
           <li><b>Camera</b>: background texture is tracked between frames (person masked out), so paths and holds are measured in wall coordinates even when the camera pans</li>
           <li><b>CoM</b>: centre of mass from segment mass fractions (Dempster / de Leva) — trunk 49.7%, thigh 10%, etc.</li>
@@ -185,28 +187,28 @@ details p,details li{font-size:12px;color:var(--mute);line-height:1.55}
           <li><b>Straight-arm rest</b>: share of resting time with an elbow &gt;150° — hanging on the skeleton instead of the muscles</li>
           <li><b>Foot:Hand</b>: foot placements per hand grab, from detecting hands/feet held still for ≥0.4 s</li>
         </ul>
-        <p>All values are estimates from single-camera 2D video. They work best for comparing the same climber on the same problem over time. The Flow score is this app's own formula and has not been validated against research data.</p>
+        <p data-i18n="exp.howNote">All values are estimates from single-camera 2D video. They work best for comparing the same climber on the same problem over time. The Flow score is this app's own formula and has not been validated against research data.</p>
       </details>
     </section>
     <section>
-      <h3><span>06</span> LABEL · GROUND TRUTH</h3>
-      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="lblMode"> Labelling mode — mark what really happened, to measure the app's accuracy</label></div>
+      <h3><span>06</span> <span data-i18n="lbl.title">LABEL · GROUND TRUTH</span></h3>
+      <div class="toggles" style="grid-template-columns:1fr"><label><input type="checkbox" id="lblMode"> <span data-i18n="lbl.mode">Labelling mode — mark what really happened, to measure the app's accuracy</span></label></div>
       <div id="lblBody" style="display:none">
-        <div class="note">Play or step to the moment, then press the key. Keys: <b>S</b> start · <b>E</b> end · <b>X</b> sent / not · <b>C</b> crux (frame they came off) · <b>H</b> last hold grabbed · <b>L</b> left/right wrong from / to. Saved in this browser as you go.</div>
-        <div class="row"><input id="lblBy" type="text" placeholder="Labelled by (your name)"><select id="lblStatus"><option value="draft">Draft</option><option value="confirmed">Confirmed</option></select></div>
+        <div class="note" data-i18n-html="lbl.keys">Play or step to the moment, then press the key. Keys: <b>S</b> start · <b>E</b> end · <b>X</b> sent / not · <b>C</b> crux (frame they came off) · <b>H</b> last hold grabbed · <b>L</b> left/right wrong from / to. Saved in this browser as you go.</div>
+        <div class="row"><input id="lblBy" type="text" placeholder="Labelled by (your name)" data-i18n-ph="lbl.byPh"><select id="lblStatus"><option value="draft" data-i18n="lbl.draft">Draft</option><option value="confirmed" data-i18n="lbl.confirmed">Confirmed</option></select></div>
         <div class="grid2">
-          <button class="btn small" data-lbl="start">S · Start attempt</button>
-          <button class="btn small" data-lbl="end">E · End attempt</button>
-          <button class="btn small" data-lbl="sent">X · Sent / not sent</button>
-          <button class="btn small" data-lbl="crux">C · Crux here</button>
-          <button class="btn small" data-lbl="hold">H · Last hold here</button>
-          <button class="btn small" data-lbl="lr">L · L/R wrong from/to</button>
+          <button class="btn small" data-lbl="start" data-i18n="lbl.start">S · Start attempt</button>
+          <button class="btn small" data-lbl="end" data-i18n="lbl.end">E · End attempt</button>
+          <button class="btn small" data-lbl="sent" data-i18n="lbl.sent">X · Sent / not sent</button>
+          <button class="btn small" data-lbl="crux" data-i18n="lbl.crux">C · Crux here</button>
+          <button class="btn small" data-lbl="hold" data-i18n="lbl.hold">H · Last hold here</button>
+          <button class="btn small" data-lbl="lr" data-i18n="lbl.lr">L · L/R wrong from/to</button>
         </div>
         <div id="lblList"></div>
         <div id="lblCompare"></div>
-        <div class="grid2"><button class="btn small" id="lblSave">Download labels.json</button><button class="btn small" id="lblLoad">Load labels.json</button></div>
+        <div class="grid2"><button class="btn small" id="lblSave" data-i18n="lbl.download">Download labels.json</button><button class="btn small" id="lblLoad" data-i18n="lbl.load">Load labels.json</button></div>
         <input id="lblFile" type="file" accept=".json,application/json" hidden>
-        <button class="btn small" id="lblClear" style="margin-top:8px;width:100%">Clear labels for this clip</button>
+        <button class="btn small" id="lblClear" style="margin-top:8px;width:100%" data-i18n="lbl.clear">Clear labels for this clip</button>
       </div>
     </section>
   </aside>
