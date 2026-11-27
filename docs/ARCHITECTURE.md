@@ -108,6 +108,7 @@ climbpose-lab/
 │  ├─ ui/                     # M17 *-panel.ts, stats, player, tagging, dom
 │  ├─ util/                   # fmt, lerp (ชั้น 0, ไม่มี DOM)
 │  ├─ config.ts               # เกณฑ์ตัวเลขทั้งหมด
+│  ├─ coaching.ts             # ข้อความ cue/tip ของ crux (ไทย/อังกฤษ) — แก้ถ้อยคำที่นี่
 │  └─ types.ts                # data contracts (หัวข้อ 5)
 ├─ tests/
 │  ├─ fixtures/               # *.pose.json (ท่าทางดิบที่บันทึกไว้) + *.labels.json (ค่าจริงที่ติดป้ายเอง)

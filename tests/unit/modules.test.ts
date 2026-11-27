@@ -71,3 +71,18 @@ describe('crux sequence frames', () => {
     expect(short[0]).toBe(20); expect(short[5]).toBe(40);
   });
 });
+
+describe('coaching rule table', () => {
+  it('every cue and tip has English and Thai text; English matches what core writes', async () => {
+    const { CUES, TIPS, sayCue, sayTip } = await import('../../src/coaching');
+    const p = { lr: 'R', deg: 126, o: 174, pct: 34, cm: 34, ms: '0.15', n: 2, m: '1.7' };
+    for (const id of Object.keys(CUES) as (keyof typeof CUES)[]) { expect(sayCue(id, p, 'en').length).toBeGreaterThan(5); expect(sayCue(id, p, 'th')).toMatch(/[฀-๿]/); }
+    for (const id of Object.keys(TIPS) as (keyof typeof TIPS)[]) { expect(sayTip(id, p, 'en').length).toBeGreaterThan(5); expect(sayTip(id, p, 'th')).toMatch(/[฀-๿]/); }
+    const fx = listFixtures().find((f) => f.name === 'IMG_4497')!, f = readJson<PoseFixture>(fx.pose);
+    const D = runPipeline({ raw: toRawTrack(f), settings: fixtureSettings(f), env: f.env });
+    for (const c of D.cruxes) {
+      for (const q of c.cues) expect(sayCue(q.id, q.p)).toBe(q.t);
+      expect(c.tipKeys.map((k) => sayTip(k.id, k.p))).toEqual(c.tips);
+    }
+  });
+});

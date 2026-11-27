@@ -7,7 +7,7 @@ import { join, relative, dirname, resolve, sep } from 'node:path';
 const ROOT = resolve(dirname(new URL(import.meta.url).pathname), '..');
 const SRC = join(ROOT, 'src');
 const LAYER = [
-  [/^(types|config)\.ts$|^util\//, 0], [/^core\/signal\//, 0],
+  [/^(types|config|coaching)\.ts$|^util\//, 0], [/^core\/signal\//, 0],
   [/^core\/(cleanup|kinematics)\//, 1],
   [/^core\/(segmentation|load|metrics)\//, 2],
   [/^core\/(results|crux|quality)\/|^core\/pipeline\.ts$/, 3],
